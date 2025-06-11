@@ -26,7 +26,7 @@ export class PuterService {
     if (typeof window !== 'undefined' && window.puter) {
       this.puter = window.puter;
       this.isInitialized = true;
-      console.log('🚀 Puter.js initialized - Free AI, Cloud, Auth, KV Database ready!');
+      console.log('🚀 Puter.js initialized - Unlimited OpenAI API, Cloud, Auth, KV Database ready!');
     } else {
       // Retry after a short delay
       setTimeout(() => this.initializePuter(), 100);
@@ -56,7 +56,7 @@ export class PuterService {
     try {
       await this.waitForInit();
       const user = await this.puter.auth.signIn();
-      console.log('✅ User signed in successfully:', user);
+      console.log('✅ User signed in successfully with unlimited OpenAI API access:', user);
       return { success: true, user };
     } catch (error) {
       console.error('❌ Sign in error:', error);
@@ -95,8 +95,56 @@ export class PuterService {
     }
   }
 
-  // ===== AI SERVICES =====
+  // ===== UNLIMITED OPENAI API SERVICES =====
   
+  async generateOpenAIResponse(prompt: string, options?: {
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+    chatHistory?: Array<{role: string, content: string}>;
+  }): Promise<{
+    success: boolean;
+    text?: string;
+    error?: string;
+  }> {
+    try {
+      await this.waitForInit();
+      console.log('🤖 Using unlimited OpenAI API via Puter.js...');
+
+      // Include chat history in the prompt for context
+      let messages = [];
+      
+      if (options?.chatHistory && options.chatHistory.length > 0) {
+        // Add recent chat history for context
+        messages = options.chatHistory.slice(-5);
+      }
+      
+      // Add the current prompt
+      messages.push({ role: 'user', content: prompt });
+
+      const response = await this.puter.ai.openai.chat.completions.create({
+        model: options?.model || 'gpt-4o',
+        messages: messages,
+        temperature: options?.temperature || 0.7,
+        max_tokens: options?.maxTokens || 4000
+      });
+      
+      const text = response.choices[0]?.message?.content || '';
+      console.log('✅ OpenAI response generated successfully via Puter.js');
+      
+      return {
+        success: true,
+        text: text
+      };
+    } catch (error) {
+      console.error('❌ Puter OpenAI API error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown OpenAI API error'
+      };
+    }
+  }
+
   async generateAIResponse(prompt: string, chatHistory?: Array<{role: string, content: string}>): Promise<{
     success: boolean;
     text?: string;
@@ -104,26 +152,33 @@ export class PuterService {
   }> {
     try {
       await this.waitForInit();
-      console.log('🤖 Generating response with Puter.js AI (GPT-4o mini)...');
+      
+      // Check if user is signed in for unlimited OpenAI API access
+      if (await this.isSignedIn()) {
+        console.log('🎯 Using unlimited OpenAI API (signed in user)...');
+        return await this.generateOpenAIResponse(prompt, { chatHistory });
+      } else {
+        console.log('🤖 Using free Puter.js AI (GPT-4o mini)...');
+        
+        // Include chat history in the prompt for context
+        let fullPrompt = prompt;
+        if (chatHistory && chatHistory.length > 0) {
+          const contextPrompt = chatHistory
+            .slice(-5) // Only use last 5 messages for context
+            .map(msg => `${msg.role}: ${msg.content}`)
+            .join('\n');
+          fullPrompt = `Previous Context:\n${contextPrompt}\n\nCurrent Request: ${prompt}`;
+        }
 
-      // Include chat history in the prompt for context
-      let fullPrompt = prompt;
-      if (chatHistory && chatHistory.length > 0) {
-        const contextPrompt = chatHistory
-          .slice(-5) // Only use last 5 messages for context
-          .map(msg => `${msg.role}: ${msg.content}`)
-          .join('\n');
-        fullPrompt = `Previous Context:\n${contextPrompt}\n\nCurrent Request: ${prompt}`;
+        const response = await this.puter.ai.chat(fullPrompt);
+        
+        console.log('✅ AI response generated successfully');
+        
+        return {
+          success: true,
+          text: response
+        };
       }
-
-      const response = await this.puter.ai.chat(fullPrompt);
-      
-      console.log('✅ AI response generated successfully');
-      
-      return {
-        success: true,
-        text: response
-      };
     } catch (error) {
       console.error('❌ Puter AI error:', error);
       return {
@@ -145,7 +200,7 @@ export class PuterService {
   }> {
     try {
       await this.waitForInit();
-      console.log('🛠️ Starting professional code generation with Puter.js AI...');
+      console.log('🛠️ Starting professional code generation with Puter.js...');
       
       const enhancedPrompt = this.createLovableStylePrompt(userPrompt, chatHistory);
       const response = await this.generateAIResponse(enhancedPrompt, chatHistory);
@@ -295,12 +350,13 @@ export class PuterService {
         code,
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        cyberpunkTheme: true
+        cyberpunkTheme: true,
+        generatedWith: 'unlimited-openai-api'
       };
 
       const result = await this.saveFile(`projects/${projectName}.json`, JSON.stringify(projectData, null, 2));
       if (result.success) {
-        console.log(`💾 Project "${projectName}" saved to Puter cloud`);
+        console.log(`💾 Project "${projectName}" saved to Puter cloud with unlimited AI`);
         
         // Also save to KV for quick access
         await this.setKV(`project:${projectName}`, projectData);
@@ -455,7 +511,7 @@ Create the cyberpunk application now:`;
         css: sections.css || this.generateCyberpunkCSS(),
         js: sections.js || this.generateCyberpunkJS()
       },
-      explanation: sections.explanation || 'Cyberpunk web application generated with Puter.js AI'
+      explanation: sections.explanation || 'Cyberpunk web application generated with unlimited Puter.js OpenAI API'
     };
   }
 
@@ -470,7 +526,7 @@ Create the cyberpunk application now:`;
         css: cssMatch ? cssMatch[1] : this.generateCyberpunkCSS(),
         js: jsMatch ? jsMatch[1] : this.generateCyberpunkJS()
       },
-      explanation: 'Cyberpunk web application generated with Puter.js AI assistance.'
+      explanation: 'Cyberpunk web application generated with unlimited Puter.js OpenAI API assistance.'
     };
   }
 
@@ -480,7 +536,7 @@ Create the cyberpunk application now:`;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Web App</title>
+    <title>Cyberpunk Web App - Unlimited AI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -488,8 +544,8 @@ Create the cyberpunk application now:`;
         <header class="cyber-hero">
             <div class="container">
                 <h1 class="cyber-title">CYBERPUNK WEB APP</h1>
-                <p class="cyber-subtitle">POWERED BY PUTER.JS AI</p>
-                <button class="cyber-button" id="activateSystem">ACTIVATE SYSTEM</button>
+                <p class="cyber-subtitle">POWERED BY UNLIMITED PUTER.JS OPENAI API</p>
+                <button class="cyber-button" id="activateSystem">ACTIVATE NEURAL LINK</button>
             </div>
         </header>
         
@@ -497,16 +553,16 @@ Create the cyberpunk application now:`;
             <div class="container">
                 <section class="cyber-grid">
                     <div class="cyber-card">
-                        <h3>NEURAL INTERFACE</h3>
-                        <p>Advanced cyberpunk functionality</p>
+                        <h3>UNLIMITED AI INTERFACE</h3>
+                        <p>Advanced cyberpunk functionality with unlimited OpenAI access</p>
                     </div>
                     <div class="cyber-card">
                         <h3>QUANTUM PROCESSING</h3>
-                        <p>High-performance digital operations</p>
+                        <p>High-performance digital operations powered by GPT-4o</p>
                     </div>
                     <div class="cyber-card">
                         <h3>MATRIX ACCESS</h3>
-                        <p>Direct connection to the digital realm</p>
+                        <p>Direct connection to the unlimited AI realm</p>
                     </div>
                 </section>
             </div>
@@ -514,7 +570,7 @@ Create the cyberpunk application now:`;
         
         <footer class="cyber-footer">
             <div class="container">
-                <p>&copy; 2024 CYBERPUNK SYSTEMS. POWERED BY PUTER.JS</p>
+                <p>&copy; 2024 CYBERPUNK SYSTEMS. POWERED BY UNLIMITED PUTER.JS OPENAI API</p>
             </div>
         </footer>
     </div>
@@ -524,16 +580,18 @@ Create the cyberpunk application now:`;
   }
 
   private generateCyberpunkCSS(): string {
-    return `/* Cyberpunk Web Application Styles */
+    return `/* Cyberpunk Web Application Styles - Unlimited AI Edition */
 :root {
     --cyber-primary: #00ffff;
     --cyber-secondary: #ff00ff;
     --cyber-accent: #00ff41;
+    --cyber-unlimited: #ffd700;
     --cyber-dark: #0a0a0a;
     --cyber-darker: #000000;
     --cyber-text: #ffffff;
     --cyber-text-dim: #a0a0a0;
     --cyber-glow: 0 0 20px currentColor;
+    --cyber-unlimited-glow: 0 0 30px var(--cyber-unlimited);
     --cyber-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -551,7 +609,8 @@ body {
     background-image: 
         radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 40% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 60% 60%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
 }
 
 .cyberpunk-container {
@@ -565,13 +624,13 @@ body {
     padding: 0 2rem;
 }
 
-/* Hero Section */
+/* Hero Section - Enhanced for Unlimited AI */
 .cyber-hero {
-    background: linear-gradient(135deg, var(--cyber-dark) 0%, rgba(0, 255, 255, 0.1) 100%);
+    background: linear-gradient(135deg, var(--cyber-dark) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(0, 255, 255, 0.1) 100%);
     padding: 6rem 0;
     text-align: center;
     position: relative;
-    border-bottom: 2px solid var(--cyber-primary);
+    border-bottom: 2px solid var(--cyber-unlimited);
 }
 
 .cyber-hero::before {
@@ -585,7 +644,7 @@ body {
         90deg,
         transparent,
         transparent 98px,
-        rgba(0, 255, 255, 0.05) 100px
+        rgba(255, 215, 0, 0.05) 100px
     );
     pointer-events: none;
 }
@@ -594,10 +653,10 @@ body {
     font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: bold;
     margin-bottom: 1rem;
-    color: var(--cyber-primary);
-    text-shadow: var(--cyber-glow);
+    color: var(--cyber-unlimited);
+    text-shadow: var(--cyber-unlimited-glow);
     letter-spacing: 0.1em;
-    animation: cyberpunkGlow 2s ease-in-out infinite alternate;
+    animation: unlimitedGlow 2s ease-in-out infinite alternate;
 }
 
 .cyber-subtitle {
@@ -610,8 +669,8 @@ body {
 
 .cyber-button {
     background: transparent;
-    color: var(--cyber-primary);
-    border: 2px solid var(--cyber-primary);
+    color: var(--cyber-unlimited);
+    border: 2px solid var(--cyber-unlimited);
     padding: 1rem 2rem;
     font-size: 1.1rem;
     font-weight: bold;
@@ -624,9 +683,9 @@ body {
 }
 
 .cyber-button:hover {
-    background: var(--cyber-primary);
+    background: var(--cyber-unlimited);
     color: var(--cyber-dark);
-    box-shadow: var(--cyber-glow);
+    box-shadow: var(--cyber-unlimited-glow);
     transform: translateY(-2px);
 }
 
@@ -634,7 +693,7 @@ body {
     transform: translateY(0);
 }
 
-/* Main Content */
+/* Main Content - Enhanced */
 .cyber-main {
     padding: 6rem 0;
     background: var(--cyber-dark);
@@ -648,8 +707,8 @@ body {
 }
 
 .cyber-card {
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid var(--cyber-primary);
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid var(--cyber-unlimited);
     padding: 2rem;
     position: relative;
     transition: var(--cyber-transition);
@@ -666,7 +725,7 @@ body {
     background: linear-gradient(
         90deg,
         transparent,
-        rgba(0, 255, 255, 0.1),
+        rgba(255, 215, 0, 0.1),
         transparent
     );
     transition: var(--cyber-transition);
@@ -677,13 +736,13 @@ body {
 }
 
 .cyber-card:hover {
-    border-color: var(--cyber-secondary);
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    border-color: var(--cyber-primary);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
     transform: translateY(-5px);
 }
 
 .cyber-card h3 {
-    color: var(--cyber-accent);
+    color: var(--cyber-unlimited);
     margin-bottom: 1rem;
     font-size: 1.5rem;
     text-transform: uppercase;
@@ -698,7 +757,7 @@ body {
 /* Footer */
 .cyber-footer {
     background: var(--cyber-darker);
-    border-top: 2px solid var(--cyber-primary);
+    border-top: 2px solid var(--cyber-unlimited);
     padding: 2rem 0;
     text-align: center;
 }
@@ -710,19 +769,20 @@ body {
     font-size: 0.9rem;
 }
 
-/* Animations */
-@keyframes cyberpunkGlow {
+/* Animations - Enhanced for Unlimited AI */
+@keyframes unlimitedGlow {
     from {
         text-shadow: 
-            0 0 5px var(--cyber-primary),
-            0 0 10px var(--cyber-primary),
-            0 0 15px var(--cyber-primary);
+            0 0 5px var(--cyber-unlimited),
+            0 0 10px var(--cyber-unlimited),
+            0 0 15px var(--cyber-unlimited);
     }
     to {
         text-shadow: 
-            0 0 10px var(--cyber-primary),
-            0 0 20px var(--cyber-primary),
-            0 0 30px var(--cyber-primary);
+            0 0 10px var(--cyber-unlimited),
+            0 0 20px var(--cyber-unlimited),
+            0 0 30px var(--cyber-unlimited),
+            0 0 40px var(--cyber-unlimited);
     }
 }
 
@@ -748,39 +808,40 @@ body {
   }
 
   private generateCyberpunkJS(): string {
-    return `// Cyberpunk Web Application JavaScript
+    return `// Cyberpunk Web Application JavaScript - Unlimited AI Edition
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Cyberpunk System Initialized with Puter.js');
+    console.log('🚀 Cyberpunk System with Unlimited AI Initialized');
     
-    // Initialize cyberpunk components
-    initializeCyberInterface();
+    // Initialize unlimited AI cyberpunk components
+    initializeUnlimitedAIInterface();
     initializeSystemCards();
     addCyberEffects();
     
     // Add professional cyberpunk interactions
     addButtonInteractions();
     addGlitchEffects();
+    addUnlimitedAIFeatures();
 });
 
-function initializeCyberInterface() {
+function initializeUnlimitedAIInterface() {
     const activateButton = document.getElementById('activateSystem');
     
     if (activateButton) {
         activateButton.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Cyberpunk activation effect
+            // Enhanced cyberpunk activation effect for unlimited AI
             this.style.transform = 'scale(0.95)';
-            this.style.boxShadow = '0 0 50px var(--cyber-primary)';
+            this.style.boxShadow = '0 0 50px var(--cyber-unlimited)';
             
             setTimeout(() => {
                 this.style.transform = '';
                 this.style.boxShadow = '';
             }, 200);
             
-            // System activation feedback
-            showCyberNotification('SYSTEM ACTIVATED', 'success');
-            activateMatrixMode();
+            // Unlimited AI activation feedback
+            showCyberNotification('UNLIMITED AI NEURAL LINK ACTIVATED', 'unlimited');
+            activateUnlimitedAIMode();
         });
     }
 }
@@ -792,75 +853,143 @@ function initializeSystemCards() {
         // Add entrance animation delay
         card.style.animationDelay = \`\${index * 0.2}s\`;
         
-        // Add cyberpunk hover interactions
+        // Add unlimited AI cyberpunk hover interactions
         card.addEventListener('mouseenter', function() {
-            this.style.background = 'rgba(0, 255, 255, 0.1)';
-            this.style.borderColor = 'var(--cyber-secondary)';
+            this.style.background = 'rgba(255, 215, 0, 0.1)';
+            this.style.borderColor = 'var(--cyber-unlimited)';
         });
         
         card.addEventListener('mouseleave', function() {
-            this.style.background = 'rgba(0, 255, 255, 0.05)';
-            this.style.borderColor = 'var(--cyber-primary)';
+            this.style.background = 'rgba(255, 215, 0, 0.05)';
+            this.style.borderColor = 'var(--cyber-unlimited)';
         });
         
         // Add click interaction
         card.addEventListener('click', function() {
-            showCyberNotification(\`ACCESSING \${this.querySelector('h3').textContent}\`, 'info');
+            showCyberNotification(\`ACCESSING \${this.querySelector('h3').textContent} WITH UNLIMITED AI\`, 'info');
             addGlitchEffect(this);
         });
     });
 }
 
 function addCyberEffects() {
-    // Add scanning line effect
+    // Add unlimited AI scanning line effect
     const scanLine = document.createElement('div');
-    scanLine.className = 'cyber-scan-line';
+    scanLine.className = 'cyber-scan-line-unlimited';
     scanLine.style.cssText = \`
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 2px;
-        background: linear-gradient(90deg, transparent, var(--cyber-primary), transparent);
+        background: linear-gradient(90deg, transparent, var(--cyber-unlimited), transparent);
         z-index: 9999;
         opacity: 0.7;
-        animation: cyberpunkScan 3s linear infinite;
+        animation: cyberpunkUnlimitedScan 3s linear infinite;
     \`;
     document.body.appendChild(scanLine);
     
-    // Add CSS for scan animation
-    if (!document.querySelector('#cyber-animations')) {
+    // Add CSS for unlimited AI scan animation
+    if (!document.querySelector('#cyber-unlimited-animations')) {
         const style = document.createElement('style');
-        style.id = 'cyber-animations';
+        style.id = 'cyber-unlimited-animations';
         style.textContent = \`
-            @keyframes cyberpunkScan {
+            @keyframes cyberpunkUnlimitedScan {
                 0% { top: 0; opacity: 0; }
                 50% { opacity: 0.7; }
                 100% { top: 100vh; opacity: 0; }
             }
             
-            .cyber-glitch {
-                animation: cyberpunkGlitch 0.3s ease-in-out;
+            .cyber-glitch-unlimited {
+                animation: cyberpunkUnlimitedGlitch 0.3s ease-in-out;
             }
             
-            @keyframes cyberpunkGlitch {
-                0%, 100% { transform: translateX(0); }
-                20% { transform: translateX(-2px); }
-                40% { transform: translateX(2px); }
-                60% { transform: translateX(-1px); }
-                80% { transform: translateX(1px); }
+            @keyframes cyberpunkUnlimitedGlitch {
+                0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); }
+                20% { transform: translateX(-2px); filter: hue-rotate(90deg); }
+                40% { transform: translateX(2px); filter: hue-rotate(180deg); }
+                60% { transform: translateX(-1px); filter: hue-rotate(270deg); }
+                80% { transform: translateX(1px); filter: hue-rotate(360deg); }
             }
         \`;
         document.head.appendChild(style);
     }
 }
 
+function addUnlimitedAIFeatures() {
+    // Add unlimited AI particle effects
+    createAIParticles();
+    
+    // Add unlimited AI status indicator
+    const aiStatus = document.createElement('div');
+    aiStatus.style.cssText = \`
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid var(--cyber-unlimited);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        color: var(--cyber-unlimited);
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 9998;
+        backdrop-filter: blur(10px);
+        animation: unlimitedPulse 2s ease-in-out infinite;
+    \`;
+    aiStatus.textContent = '∞ UNLIMITED AI ACTIVE';
+    document.body.appendChild(aiStatus);
+    
+    // Add unlimited AI pulse animation
+    const pulseStyle = document.createElement('style');
+    pulseStyle.textContent = \`
+        @keyframes unlimitedPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--cyber-unlimited); }
+            50% { box-shadow: 0 0 20px var(--cyber-unlimited); }
+        }
+    \`;
+    document.head.appendChild(pulseStyle);
+}
+
+function createAIParticles() {
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.style.cssText = \`
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: var(--cyber-unlimited);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatAI \${Math.random() * 10 + 5}s linear infinite;
+            left: \${Math.random() * 100}vw;
+            top: \${Math.random() * 100}vh;
+            opacity: \${Math.random() * 0.7 + 0.3};
+        \`;
+        document.body.appendChild(particle);
+    }
+    
+    // Add AI particle animation
+    const particleStyle = document.createElement('style');
+    particleStyle.textContent = \`
+        @keyframes floatAI {
+            0% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-10px) translateX(5px); }
+            50% { transform: translateY(-5px) translateX(-5px); }
+            75% { transform: translateY(-15px) translateX(3px); }
+            100% { transform: translateY(-20px) translateX(0); opacity: 0; }
+        }
+    \`;
+    document.head.appendChild(particleStyle);
+}
+
 function addButtonInteractions() {
-    // Add cyberpunk button interactions throughout the app
+    // Add unlimited AI cyberpunk button interactions
     document.querySelectorAll('button, .cyber-button').forEach(button => {
         button.addEventListener('mousedown', function() {
             this.style.transform = 'scale(0.98)';
-            this.style.filter = 'brightness(1.2)';
+            this.style.filter = 'brightness(1.2) hue-rotate(30deg)';
         });
         
         button.addEventListener('mouseup', function() {
@@ -871,24 +1000,24 @@ function addButtonInteractions() {
 }
 
 function addGlitchEffects() {
-    // Random glitch effects on title
+    // Random unlimited AI glitch effects on title
     setInterval(() => {
         const title = document.querySelector('.cyber-title');
         if (title && Math.random() < 0.1) {
-            addGlitchEffect(title);
+            addUnlimitedGlitchEffect(title);
         }
     }, 5000);
 }
 
-function addGlitchEffect(element) {
-    element.classList.add('cyber-glitch');
+function addUnlimitedGlitchEffect(element) {
+    element.classList.add('cyber-glitch-unlimited');
     setTimeout(() => {
-        element.classList.remove('cyber-glitch');
+        element.classList.remove('cyber-glitch-unlimited');
     }, 300);
 }
 
-function activateMatrixMode() {
-    // Create matrix-style background effect
+function activateUnlimitedAIMode() {
+    // Create unlimited AI matrix-style background effect
     const matrix = document.createElement('div');
     matrix.style.cssText = \`
         position: fixed;
@@ -902,20 +1031,20 @@ function activateMatrixMode() {
             0deg,
             transparent,
             transparent 2px,
-            rgba(0, 255, 65, 0.03) 2px,
-            rgba(0, 255, 65, 0.03) 4px
+            rgba(255, 215, 0, 0.03) 2px,
+            rgba(255, 215, 0, 0.03) 4px
         );
-        animation: matrixScroll 20s linear infinite;
+        animation: unlimitedMatrixScroll 20s linear infinite;
     \`;
     
     document.body.appendChild(matrix);
     
-    // Add matrix scroll animation
+    // Add unlimited AI matrix scroll animation
     const style = document.createElement('style');
     style.textContent = \`
-        @keyframes matrixScroll {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(100vh); }
+        @keyframes unlimitedMatrixScroll {
+            0% { transform: translateY(0) hue-rotate(0deg); }
+            100% { transform: translateY(100vh) hue-rotate(360deg); }
         }
     \`;
     document.head.appendChild(style);
@@ -928,19 +1057,21 @@ function activateMatrixMode() {
 }
 
 function showCyberNotification(message, type = 'info') {
-    // Create cyberpunk notification system
+    // Create unlimited AI cyberpunk notification system
     const notification = document.createElement('div');
     notification.className = \`cyber-notification cyber-notification--\${type}\`;
     notification.textContent = message;
     
-    // Notification styles
+    // Notification styles with unlimited AI theme
     Object.assign(notification.style, {
         position: 'fixed',
         top: '20px',
         right: '20px',
-        background: type === 'success' ? 'rgba(0, 255, 65, 0.1)' : 
+        background: type === 'unlimited' ? 'rgba(255, 215, 0, 0.1)' :
+                   type === 'success' ? 'rgba(0, 255, 65, 0.1)' : 
                    type === 'error' ? 'rgba(255, 0, 100, 0.1)' : 'rgba(0, 255, 255, 0.1)',
-        border: \`2px solid \${type === 'success' ? 'var(--cyber-accent)' : 
+        border: \`2px solid \${type === 'unlimited' ? 'var(--cyber-unlimited)' :
+                                type === 'success' ? 'var(--cyber-accent)' : 
                                 type === 'error' ? 'var(--cyber-secondary)' : 'var(--cyber-primary)'}\`,
         color: 'var(--cyber-text)',
         padding: '1rem 1.5rem',
@@ -953,7 +1084,8 @@ function showCyberNotification(message, type = 'info') {
         textTransform: 'uppercase',
         letterSpacing: '0.1em',
         backdropFilter: 'blur(10px)',
-        boxShadow: \`0 0 20px \${type === 'success' ? 'var(--cyber-accent)' : 
+        boxShadow: \`0 0 20px \${type === 'unlimited' ? 'var(--cyber-unlimited)' :
+                                    type === 'success' ? 'var(--cyber-accent)' : 
                                     type === 'error' ? 'var(--cyber-secondary)' : 'var(--cyber-primary)'}\`
     });
     
@@ -970,24 +1102,25 @@ function showCyberNotification(message, type = 'info') {
         setTimeout(() => {
             document.body.removeChild(notification);
         }, 300);
-    }, 3000);
+    }, 4000);
 }
 
-// Add cyberpunk error handling
+// Add unlimited AI cyberpunk error handling
 window.addEventListener('error', function(e) {
-    console.error('SYSTEM ERROR:', e.error);
-    showCyberNotification('SYSTEM ERROR DETECTED', 'error');
+    console.error('UNLIMITED AI SYSTEM ERROR:', e.error);
+    showCyberNotification('UNLIMITED AI SYSTEM ERROR DETECTED', 'error');
 });
 
-// Add performance monitoring
+// Add unlimited AI performance monitoring
 if ('performance' in window) {
     window.addEventListener('load', function() {
         const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-        console.log(\`⚡ CYBERPUNK SYSTEM LOADED IN \${loadTime}ms\`);
+        console.log(\`⚡ UNLIMITED AI CYBERPUNK SYSTEM LOADED IN \${loadTime}ms\`);
     });
 }
 
-console.log('✅ CYBERPUNK NEURAL INTERFACE READY');`;
+console.log('✅ UNLIMITED AI CYBERPUNK NEURAL INTERFACE READY');
+console.log('∞ UNLIMITED OPENAI API ACCESS ACTIVE');`;
   }
 }
 
