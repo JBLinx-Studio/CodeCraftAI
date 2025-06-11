@@ -29,6 +29,18 @@ export class FreeAPIClient implements AIClient {
     }
   }
 
+  async generateResponse(prompt: string, chatHistory?: { role: string; content: string }[]): Promise<{ content: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }> {
+    // For free tier, return a simple fallback response
+    return {
+      content: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
+      usage: {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0
+      }
+    };
+  }
+
   createEnhancedPrompt(prompt: string, chatHistory?: { role: string; content: string }[]): string {
     const history = chatHistory || [];
     return history.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${prompt}`;
