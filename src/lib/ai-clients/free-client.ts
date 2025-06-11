@@ -1,5 +1,5 @@
 
-import { AIClient } from './base-client';
+import { AIClient, AIRequestParams, AIServiceResponse } from './base-client';
 
 export interface FreeClientOptions {
   // No options needed for free client
@@ -29,7 +29,7 @@ export class FreeAPIClient implements AIClient {
     }
   }
 
-  async generateResponse(prompt: string, chatHistory?: { role: string; content: string }[]): Promise<{ content: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }> {
+  async generateResponse(params: AIRequestParams): Promise<AIServiceResponse> {
     // For free tier, return a simple fallback response
     return {
       content: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
