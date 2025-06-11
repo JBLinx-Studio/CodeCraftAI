@@ -2,7 +2,7 @@ name: Deploy CodeCraft AI to GitHub Pages
 
 on:
   push:
-    branches: ["main"]    # Change if your default branch is not 'main'
+    branches: ["main"]    # Set to your default branch if different
   workflow_dispatch:
 
 permissions:
@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,11 +30,14 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Clean install dependencies
-        run: npm ci
+      - name: Clean npm cache
+        run: npm cache clean --force
 
-      - name: Update Browserslist database
-        run: npx update-browserslist-db@latest
+      - name: Ensure latest npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build project
         run: npm run build
@@ -42,66 +46,15 @@ jobs:
           VITE_CACHE_BUSTER: ${{ github.sha }}
 
       - name: Create 404.html for SPA routing
-        run: |
-          cat > ./dist/404.html << 'EOL'
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>CodeCraft AI - Page Not Found</title>
-              <script type="text/javascript">
-                var pathSegmentsToKeep = 1;
-                var l = window.location;
-                l.replace(
-                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                  l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-                  l.pathname.split('/').slice(1 + pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-                  (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-                  l.hash
-                );
-              </script>
-            </head>
-            <body>
-              <div style="text-align: center; padding: 50px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                <h2 style="color: #667eea;">Redirecting to CodeCraft AI...</h2>
-                <p style="color: #666;">Please wait while we redirect you to the correct page.</p>
-                <div style="width: 40px; height: 40px; border: 4px solid rgba(102,126,234,0.3); border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto;"></div>
-                <style>
-                  @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                  }
-                </style>
-              </div>
-            </body>
-          </html>
-          EOL
-
-      - name: Patch index.html for SPA routing
-        run: |
-          sed -i '/<head>/a \
-          <!-- Start Single Page Apps for GitHub Pages --> \
-          <script type="text/javascript"> \
-            (function(l) { \
-              if (l.search[1] === "/" ) { \
-                var decoded = l.search.slice(1).split("&").map(function(s) { \
-                  return s.replace(/~and~/g, "&"); \
-                }).join("?"); \
-                window.history.replaceState(null, null, \
-                    l.pathname.slice(0, -1) + decoded + l.hash \
-                ); \
-              } \
-            }(window.location)) \
-          </script> \
-          <!-- End Single Page Apps for GitHub Pages -->' ./dist/index.html
+        run: cp dist/index.html dist/404.html
 
       - name: Create .nojekyll file
-        run: touch ./dist/.nojekyll
+        run: touch dist/.nojekyll
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          folder: dist
-          branch: gh-pages
-          clean: true
-          force: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
