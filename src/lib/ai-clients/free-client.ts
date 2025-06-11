@@ -31,8 +31,7 @@ export class FreeAPIClient implements AIClient {
 
   async generateResponse(params: AIRequestParams): Promise<AIServiceResponse> {
     // For free tier, return a simple fallback response
-    // Using 'response' property to match the AIServiceResponse interface
-    const response: AIServiceResponse = {
+    return {
       response: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
       usage: {
         prompt_tokens: 0,
@@ -40,7 +39,6 @@ export class FreeAPIClient implements AIClient {
         total_tokens: 0
       }
     };
-    return response;
   }
 
   createEnhancedPrompt(prompt: string, chatHistory?: { role: string; content: string }[]): string {
