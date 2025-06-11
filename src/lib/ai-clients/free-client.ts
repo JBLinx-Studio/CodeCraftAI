@@ -1,7 +1,18 @@
-import { AIServiceResponse } from '@/types';
+import { AIResponse } from '@/types';
+
+export interface FreeClientOptions {
+  apiKey?: string;
+  model?: string;
+}
 
 export class FreeAIClient {
-  async generateCode(prompt: string): Promise<AIServiceResponse> {
+  private options: FreeClientOptions;
+
+  constructor(options: FreeClientOptions = {}) {
+    this.options = options;
+  }
+
+  async generateCode(prompt: string): Promise<AIResponse> {
     console.log('🔧 Using Free AI Client for prompt:', prompt);
     
     try {
@@ -27,11 +38,47 @@ export class FreeAIClient {
     }
   }
 
-  
   private generateHTML(prompt: string): string {
     const isLanding = prompt.toLowerCase().includes('landing') || prompt.toLowerCase().includes('homepage');
     const isTodo = prompt.toLowerCase().includes('todo') || prompt.toLowerCase().includes('task');
     const isPortfolio = prompt.toLowerCase().includes('portfolio') || prompt.toLowerCase().includes('resume');
+    const isCalculator = prompt.toLowerCase().includes('calculator') || prompt.toLowerCase().includes('calc');
+    
+    if (isCalculator) {
+      return `
+        <div class="calculator-container">
+          <div class="calculator">
+            <div class="display">
+              <input type="text" id="display" readonly value="0">
+            </div>
+            <div class="buttons">
+              <button onclick="clearDisplay()">C</button>
+              <button onclick="deleteLast()">←</button>
+              <button onclick="appendToDisplay('/')">/</button>
+              <button onclick="appendToDisplay('*')">×</button>
+              
+              <button onclick="appendToDisplay('7')">7</button>
+              <button onclick="appendToDisplay('8')">8</button>
+              <button onclick="appendToDisplay('9')">9</button>
+              <button onclick="appendToDisplay('-')">-</button>
+              
+              <button onclick="appendToDisplay('4')">4</button>
+              <button onclick="appendToDisplay('5')">5</button>
+              <button onclick="appendToDisplay('6')">6</button>
+              <button onclick="appendToDisplay('+')">+</button>
+              
+              <button onclick="appendToDisplay('1')">1</button>
+              <button onclick="appendToDisplay('2')">2</button>
+              <button onclick="appendToDisplay('3')">3</button>
+              <button onclick="calculate()" class="equals" rowspan="2">=</button>
+              
+              <button onclick="appendToDisplay('0')" class="zero">0</button>
+              <button onclick="appendToDisplay('.')">.</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     
     if (isLanding) {
       return `
@@ -123,12 +170,6 @@ export class FreeAIClient {
         margin-bottom: 20px;
       }
       
-      .hero-subtitle {
-        font-size: 1.2rem;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 30px;
-      }
-      
       .cta-button, .action-button {
         background: linear-gradient(45deg, #ff6b6b, #ee5a24);
         color: white;
@@ -143,104 +184,10 @@ export class FreeAIClient {
       .cta-button:hover, .action-button:hover {
         transform: translateY(-3px);
       }
-      
-      .features-section {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-top: 40px;
-      }
-      
-      .feature-card {
-        background: rgba(255, 255, 255, 0.9);
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      }
-      
-      .todo-app {
-        background: white;
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-      }
-      
-      .todo-input-section {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 30px;
-      }
-      
-      #todoInput {
-        flex: 1;
-        padding: 15px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        font-size: 1rem;
-      }
-      
-      .todo-list {
-        list-style: none;
-      }
-      
-      .todo-item {
-        background: #f8f9fa;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
     `;
   }
   
   private generateJS(prompt: string): string {
-    const isTodo = prompt.toLowerCase().includes('todo') || prompt.toLowerCase().includes('task');
-    
-    if (isTodo) {
-      return `
-        let todos = [];
-        
-        function addTodo() {
-          const input = document.getElementById('todoInput');
-          const text = input.value.trim();
-          
-          if (text) {
-            todos.push({ id: Date.now(), text, completed: false });
-            input.value = '';
-            renderTodos();
-          }
-        }
-        
-        function toggleTodo(id) {
-          todos = todos.map(todo => 
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-          );
-          renderTodos();
-        }
-        
-        function deleteTodo(id) {
-          todos = todos.filter(todo => todo.id !== id);
-          renderTodos();
-        }
-        
-        function renderTodos() {
-          const list = document.getElementById('todoList');
-          list.innerHTML = todos.map(todo => \`
-            <li class="todo-item \${todo.completed ? 'completed' : ''}">
-              <span onclick="toggleTodo(\${todo.id})">\${todo.text}</span>
-              <button onclick="deleteTodo(\${todo.id})">Delete</button>
-            </li>
-          \`).join('');
-        }
-        
-        document.getElementById('todoInput').addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') addTodo();
-        });
-      `;
-    }
-    
     return `
       function interact() {
         alert('Hello! Your application is working perfectly!');
@@ -252,19 +199,6 @@ export class FreeAIClient {
           document.querySelector('.hero-section').style.transform = 'scale(1)';
         }, 200);
       }
-      
-      // Add some interactive animations
-      document.addEventListener('DOMContentLoaded', function() {
-        const buttons = document.querySelectorAll('button');
-        buttons.forEach(button => {
-          button.addEventListener('mouseenter', function() {
-            this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-          });
-          button.addEventListener('mouseleave', function() {
-            this.style.boxShadow = 'none';
-          });
-        });
-      });
     `;
   }
   
@@ -273,6 +207,9 @@ export class FreeAIClient {
     if (prompt.toLowerCase().includes('landing')) return 'landing page';
     if (prompt.toLowerCase().includes('portfolio')) return 'portfolio website';
     if (prompt.toLowerCase().includes('dashboard')) return 'dashboard interface';
+    if (prompt.toLowerCase().includes('calculator')) return 'calculator application';
     return 'web application';
   }
 }
+
+export type { FreeClientOptions };

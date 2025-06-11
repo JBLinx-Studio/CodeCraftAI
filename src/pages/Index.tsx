@@ -4,143 +4,177 @@ import Header from "@/components/Header";
 import { ChatPanel } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import { Toaster } from "@/components/ui/toaster";
-import { Code, Sparkles, Zap, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import PuterAuth from "@/components/PuterAuth";
+import { Card, CardContent } from "@/components/ui/card";
+import { MessageSquare, Eye, Github, Crown } from "lucide-react";
 
 const Index = () => {
   const [html, setHtml] = useState("");
   const [css, setCss] = useState("");
   const [js, setJs] = useState("");
-  const [showWelcome, setShowWelcome] = useState(true);
   
   const handleCodeGenerated = (html: string, css: string, js: string) => {
     setHtml(html);
     setCss(css);
     setJs(js);
-    setShowWelcome(false);
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
       
-      <main className="flex-1 mt-16 flex flex-col">
-        {showWelcome && (
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
-            <div className="container max-w-4xl mx-auto text-center px-4">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4" />
-                Free AI • Powered by Puter.js • No API Keys Required
+      {/* Main Content */}
+      <main className="flex-1 mt-16">
+        <div className="h-[calc(100vh-4rem)] grid lg:grid-cols-[400px,1fr,300px] grid-rows-1">
+          {/* Left Sidebar - Auth & Settings */}
+          <div className="hidden lg:block bg-white border-r border-slate-200 overflow-y-auto">
+            <div className="p-4 space-y-4">
+              {/* Header */}
+              <div className="text-center pb-4 border-b">
+                <h1 className="text-xl font-bold text-slate-900">CodeCraft AI</h1>
+                <p className="text-sm text-slate-600">Fullstack AI App Generator</p>
               </div>
               
-              <h1 className="text-5xl font-bold mb-6">
-                Build web apps with 
-                <span className="text-yellow-300"> AI assistance</span>
-              </h1>
+              {/* Puter Authentication */}
+              <PuterAuth />
               
-              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                Just describe what you want to build and watch it come to life instantly. 
-                No coding experience required.
-              </p>
+              {/* Quick Actions */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Github className="h-4 w-4" />
+                    Quick Actions
+                  </h3>
+                  <div className="space-y-2">
+                    <button className="w-full text-left p-2 rounded-lg hover:bg-slate-100 text-sm">
+                      🔗 Connect GitHub
+                    </button>
+                    <button className="w-full text-left p-2 rounded-lg hover:bg-slate-100 text-sm">
+                      📁 Save Project
+                    </button>
+                    <button className="w-full text-left p-2 rounded-lg hover:bg-slate-100 text-sm">
+                      📤 Export Code
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
               
-              <Button 
-                onClick={() => setShowWelcome(false)}
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 text-lg"
-              >
-                <Zap className="h-5 w-5 mr-2" />
-                Start Building Now
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
+              {/* Premium Features */}
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-yellow-500" />
+                    Premium Plans
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <div className="font-medium">Free Plan</div>
+                      <div className="text-slate-600">Basic AI generation</div>
+                    </div>
+                    <div className="p-2 bg-yellow-50 rounded-lg">
+                      <div className="font-medium">Pro Plan</div>
+                      <div className="text-slate-600">Unlimited AI + GitHub</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        )}
-        
-        <div className="flex-1 container mx-auto p-4">
-          <div className="grid lg:grid-cols-2 gap-6 h-full">
-            {/* Chat Panel - Left Side */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-700 p-4 border-b">
+          
+          {/* Center - Main Workspace */}
+          <div className="grid lg:grid-cols-2 bg-white">
+            {/* Chat Panel */}
+            <div className="border-r border-slate-200 flex flex-col">
+              <div className="border-b border-slate-200 p-4 bg-slate-50">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                    <Code className="h-5 w-5 text-white" />
+                  <div className="h-8 w-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                    <MessageSquare className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-lg">💬 Chat with AI</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Type your idea here → AI builds it for you
-                    </p>
+                    <h2 className="font-semibold text-slate-900">AI Chat</h2>
+                    <p className="text-sm text-slate-600">Describe your app idea</p>
                   </div>
                 </div>
               </div>
-              <div className="flex-1 min-h-[500px]">
+              <div className="flex-1 min-h-0">
                 <ChatPanel onCodeGenerated={handleCodeGenerated} />
               </div>
             </div>
             
-            {/* Preview Panel - Right Side */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-700 p-4 border-b">
+            {/* Preview Panel */}
+            <div className="flex flex-col">
+              <div className="border-b border-slate-200 p-4 bg-slate-50">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-white" />
+                  <div className="h-8 w-8 rounded-lg bg-green-500 flex items-center justify-center">
+                    <Eye className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-lg">👀 Live Preview</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      Watch your app appear here instantly
-                    </p>
+                    <h2 className="font-semibold text-slate-900">Live Preview</h2>
+                    <p className="text-sm text-slate-600">Real-time app preview</p>
                   </div>
                 </div>
               </div>
-              <div className="flex-1 min-h-[500px]">
-                <PreviewPanel 
-                  html={html} 
-                  css={css} 
-                  js={js} 
-                />
+              <div className="flex-1 min-h-0">
+                <PreviewPanel html={html} css={css} js={js} />
               </div>
+            </div>
+          </div>
+          
+          {/* Right Sidebar - Project Info */}
+          <div className="hidden lg:block bg-white border-l border-slate-200 overflow-y-auto">
+            <div className="p-4 space-y-4">
+              <div className="text-center pb-4 border-b">
+                <h3 className="font-semibold text-slate-900">Project Status</h3>
+              </div>
+              
+              {/* Project Stats */}
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-3">Current Project</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>HTML Lines:</span>
+                      <span className="font-mono">{html.split('\n').length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>CSS Lines:</span>
+                      <span className="font-mono">{css.split('\n').length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>JS Lines:</span>
+                      <span className="font-mono">{js.split('\n').length}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Instructions */}
+              <Card>
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-3">How to Use</h4>
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <div className="flex items-start gap-2">
+                      <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">1</span>
+                      <span>Sign in with Puter.js for unlimited AI</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">2</span>
+                      <span>Describe your app in the chat</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">3</span>
+                      <span>Watch it build in real-time</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">4</span>
+                      <span>Export or sync to GitHub</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
-        
-        {/* Simple How It Works */}
-        {showWelcome && (
-          <div className="bg-white dark:bg-slate-800 py-16">
-            <div className="container mx-auto px-4">
-              <h3 className="text-2xl font-bold text-center mb-12">How It Works</h3>
-              <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                <div className="text-center">
-                  <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-blue-600">1</span>
-                  </div>
-                  <h4 className="font-semibold mb-2">Describe Your Idea</h4>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">
-                    Tell the AI what you want to build in plain English
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="h-16 w-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-purple-600">2</span>
-                  </div>
-                  <h4 className="font-semibold mb-2">AI Builds It</h4>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">
-                    Watch as the AI creates your app with HTML, CSS, and JavaScript
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="h-16 w-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-green-600">3</span>
-                  </div>
-                  <h4 className="font-semibold mb-2">See It Live</h4>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">
-                    Your app appears instantly in the preview panel
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
       
       <Toaster />
