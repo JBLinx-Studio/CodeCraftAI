@@ -31,9 +31,9 @@ export class FreeAPIClient implements AIClient {
 
   async generateResponse(params: AIRequestParams): Promise<AIServiceResponse> {
     // For free tier, return a simple fallback response
-    // Based on the base-client interface, AIServiceResponse should have specific properties
+    // Using 'response' property to match the AIServiceResponse interface
     const response: AIServiceResponse = {
-      content: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
+      response: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
       usage: {
         prompt_tokens: 0,
         completion_tokens: 0,
