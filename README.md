@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
 
-## Project info
+# CodeCraft AI - AI Fullstack Engineer
 
-**URL**: https://lovable.dev/projects/d810ac25-6ba1-4949-a5f5-44aa19904f6a
+**Transforming Ideas into Code with AI Precision**
 
-## How can I edit this code?
+CodeCraft AI is an innovative AI-powered platform that converts natural language prompts into fully functional web applications. Built by JBLinx Studio, it empowers developers and non-developers alike to create sophisticated web applications through intelligent conversation.
 
-There are several ways of editing your application.
+## 🚀 Features
 
-**Use Lovable**
+- **AI-Driven Development**: Convert natural language descriptions into working code
+- **Fullstack Generation**: Complete frontend and backend application creation
+- **Real-time Preview**: See your application come to life as you describe it
+- **Smart Code Architecture**: Generates clean, maintainable, and scalable code
+- **Component-Based**: Creates reusable React components with modern patterns
+- **Responsive Design**: Mobile-first, responsive applications by default
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d810ac25-6ba1-4949-a5f5-44aa19904f6a) and start prompting.
+## 🛠️ Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **State Management**: React Query (TanStack Query)
+- **Routing**: React Router DOM
+- **Build Tool**: Vite with SWC
+- **UI Components**: Radix UI primitives
+- **Icons**: Lucide React
+- **Charts**: Recharts
 
-**Use your preferred IDE**
+## 📁 Project Structure
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui components
+│   └── ...             # Custom components
+├── pages/              # Route components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+├── types/              # TypeScript type definitions
+└── docs/               # Documentation files
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🎯 Getting Started
 
-Follow these steps:
+### Prerequisites
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Node.js 18+ (recommended: use [nvm](https://github.com/nvm-sh/nvm))
+- npm or yarn package manager
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd codecraft-ai
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open your browser and navigate to `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📖 Documentation
 
-**Use GitHub Codespaces**
+- [API Reference](./docs/api.md)
+- [Component Library](./docs/components.md)
+- [Development Guide](./docs/development.md)
+- [Deployment Guide](./docs/deployment.md)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔧 Development
 
-## What technologies are used for this project?
+### Available Scripts
 
-This project is built with:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Code Style
 
-## How can I deploy this project?
+This project follows modern React and TypeScript best practices:
 
-Simply open [Lovable](https://lovable.dev/projects/d810ac25-6ba1-4949-a5f5-44aa19904f6a) and click on Share -> Publish.
+- Functional components with hooks
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Component composition patterns
+- Clean code principles
 
-## Can I connect a custom domain to my Lovable project?
+## 🚀 Deployment
 
-Yes, you can!
+CodeCraft AI can be deployed to any static hosting service:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Netlify**: Connect your GitHub repo for automatic deployments
+- **Vercel**: Zero-config deployment with GitHub integration
+- **GitHub Pages**: Free hosting for public repositories
+- **Custom Server**: Build and serve the `dist` folder
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./docs/contributing.md) for details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🏢 About JBLinx Studio
+
+CodeCraft AI is developed by **JBLinx Studio**, a forward-thinking technology company specializing in AI-powered development tools and innovative web solutions.
+
+---
+
+**Built with ❤️ by JBLinx Studio**
