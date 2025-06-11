@@ -1,10 +1,8 @@
 name: Deploy CodeCraft AI to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
-  # Allows you to run this workflow manually from the Actions tab
+    branches: ["main"]    # Change if your default branch is not 'main'
   workflow_dispatch:
 
 permissions:
@@ -20,33 +18,30 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: '18'
           cache: 'npm'
 
-      - name: Ensure missing dependencies are installed
-        run: |
-          npm pkg get dependencies.'@radix-ui/react-button' | grep -q null && npm install @radix-ui/react-button@latest --save || echo "@radix-ui/react-button already present"
+      - name: Clean install dependencies
+        run: npm ci
 
-      - name: Install dependencies & update browserslist
-        run: |
-          npm ci
-          npx update-browserslist-db@latest
+      - name: Update Browserslist database
+        run: npx update-browserslist-db@latest
 
-      - name: Build CodeCraft AI
+      - name: Build project
         run: npm run build
         env:
           NODE_ENV: production
           VITE_CACHE_BUSTER: ${{ github.sha }}
 
-      - name: Create 404.html
+      - name: Create 404.html for SPA routing
         run: |
           cat > ./dist/404.html << 'EOL'
           <!DOCTYPE html>
@@ -82,7 +77,7 @@ jobs:
           </html>
           EOL
 
-      - name: Update index.html for SPA
+      - name: Patch index.html for SPA routing
         run: |
           sed -i '/<head>/a \
           <!-- Start Single Page Apps for GitHub Pages --> \
@@ -103,7 +98,7 @@ jobs:
       - name: Create .nojekyll file
         run: touch ./dist/.nojekyll
 
-      - name: Deploy CodeCraft AI to GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
