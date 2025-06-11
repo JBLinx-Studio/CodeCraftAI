@@ -1,9 +1,10 @@
-import Header from "@/components/Header";
-import { ChatPanel } from "@/components/ChatPanel";
-import PreviewPanel from "@/components/PreviewPanel";
+import React from 'react';
+import { Header } from '@/components/Header';
+import { ChatPanel } from '@/components/ChatPanel';
+import { PreviewPanel } from '@/components/PreviewPanel';
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { Code, Zap, Layout, Star, Terminal, ShieldCheck, CircuitBoard, Cpu, Database, MicrochipIcon, MonitorSmartphone, Circuit, Braces, ChevronsRight, ChevronsLeft } from "lucide-react";
+import { Code, Zap, Layout, Star, Terminal, ShieldCheck, CircuitBoard, Cpu, Database, MicrochipIcon, MonitorSmartphone, Circuit, Braces, ChevronsRight, ChevronsLeft, Palette, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -336,3 +337,5 @@ const Home = () => {
 };
 
 export default Home;
+
+</edits_to_apply>
