@@ -50,7 +50,7 @@ src/
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/your-username/codecraft-ai.git
 cd codecraft-ai
 ```
 
@@ -94,12 +94,25 @@ This project follows modern React and TypeScript best practices:
 
 ## 🚀 Deployment
 
-CodeCraft AI can be deployed to any static hosting service:
+### Automatic Deployment with GitHub Actions
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions. Every push to the main branch triggers a deployment.
+
+### Manual Deployment Options
+
+CodeCraft AI can also be deployed to any static hosting service:
 
 - **Netlify**: Connect your GitHub repo for automatic deployments
 - **Vercel**: Zero-config deployment with GitHub integration
-- **GitHub Pages**: Free hosting for public repositories
+- **GitHub Pages**: Configured with GitHub Actions (default)
 - **Custom Server**: Build and serve the `dist` folder
+
+### Setting up GitHub Pages
+
+1. Go to your repository settings
+2. Navigate to "Pages" in the sidebar
+3. Under "Source", select "GitHub Actions"
+4. The workflow will automatically deploy on the next push
 
 ## 🤝 Contributing
 
