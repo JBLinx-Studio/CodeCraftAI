@@ -1,18 +1,29 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { templates } from "@/lib/templates";
+import { templates } from "@/lib/templates/index";
 
 interface TemplateGalleryProps {
   onSelectTemplate: (template: { html: string; css: string; js: string }) => void;
+  searchQuery?: string;
+  selectedTemplateId?: string;
+  isLoading?: boolean;
+  categoryFilter?: string;
 }
 
-const TemplateGallery = ({ onSelectTemplate }: TemplateGalleryProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+const TemplateGallery = ({ 
+  onSelectTemplate, 
+  searchQuery = '', 
+  selectedTemplateId,
+  isLoading = false,
+  categoryFilter 
+}: TemplateGalleryProps) => {
+  const [searchTerm, setSearchTerm] = useState(searchQuery);
+  const [selectedCategory, setSelectedCategory] = useState(categoryFilter || 'all');
 
   // Use the actual templates from the templates library
   const filteredTemplates = templates.filter(template => {
@@ -47,7 +58,7 @@ const TemplateGallery = ({ onSelectTemplate }: TemplateGalleryProps) => {
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="px-3 py-2 border rounded-md bg-background"
         >
-          {categories.map(category => (
+          {categories.map((category: string) => (
             <option key={category} value={category}>
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </option>
@@ -78,8 +89,9 @@ const TemplateGallery = ({ onSelectTemplate }: TemplateGalleryProps) => {
               <Button
                 onClick={() => handleTemplateSelect(template)}
                 className="w-full"
+                disabled={isLoading && selectedTemplateId === template.id}
               >
-                Use Template
+                {isLoading && selectedTemplateId === template.id ? 'Loading...' : 'Use Template'}
               </Button>
             </CardContent>
           </Card>

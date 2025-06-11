@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChatPanel } from '@/components/ChatPanel';
-import { PreviewPanel } from '@/components/PreviewPanel';
+import PreviewPanel from '@/components/PreviewPanel';
 import LovableStyleInterface from '@/components/LovableStyleInterface';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

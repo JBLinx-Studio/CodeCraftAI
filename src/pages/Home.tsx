@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Header } from '@/components/Header';
+import Header from '@/components/Header';
 import WorkspaceSection from '@/components/WorkspaceSection';
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
