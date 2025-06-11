@@ -1,17 +1,19 @@
-
 import { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { Message, AIProvider } from "@/types";
 import AISettings from "./AISettings";
-import { Settings, Zap, Brain, Code, Sparkles } from "lucide-react";
+import PuterAuth from "./PuterAuth";
+import { Settings, Zap, Brain, Code, Sparkles, Cloud, Database } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAI } from "@/hooks/use-ai";
+import { usePuter } from "@/hooks/use-puter";
 import { toast } from "sonner";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 export interface ChatPanelProps {
   onCodeGenerated: (html: string, css: string, js: string) => void;
@@ -19,6 +21,7 @@ export interface ChatPanelProps {
 
 export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   const { generateCode, isProcessing, apiKey, usingFreeAPI, apiProvider, modelType, saveApiKey, clearApiKey, setFreeAPI } = useAI();
+  const { isAuthenticated, user, signIn, signOut, saveProject } = usePuter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [hasAuthError, setHasAuthError] = useState(false);
@@ -26,18 +29,22 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   const [currentThinkingStep, setCurrentThinkingStep] = useState<string>('');
 
   useEffect(() => {
-    // Add welcome message
+    // Add welcome message with Puter.js info
     if (messages.length === 0) {
+      const welcomeMessage = isAuthenticated 
+        ? `Hello ${user?.username || 'there'}! I'm your AI assistant powered by Puter.js. With your cloud account connected, I can save your projects automatically and provide unlimited AI assistance. What would you like to create today?`
+        : `Hello! I'm your professional AI assistant powered by ${usingFreeAPI ? 'Puter.js (Free GPT-4o mini)' : apiProvider}. I can build complete, production-ready web applications. Sign in to Puter.js for automatic project saving and unlimited features!`;
+        
       setMessages([
         {
           id: nanoid(),
           role: "assistant",
-          content: `Hello! I'm your professional AI assistant powered by ${usingFreeAPI ? 'Puter.js (Free GPT-4o mini)' : apiProvider}. I can build complete, production-ready web applications just like Lovable AI. What would you like to create today?`,
+          content: welcomeMessage,
           timestamp: Date.now(),
         },
       ]);
     }
-  }, [messages.length, usingFreeAPI, apiProvider]);
+  }, [messages.length, usingFreeAPI, apiProvider, isAuthenticated, user]);
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     setMessages((prev) => [
@@ -54,16 +61,17 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   const simulateLovableAIThinking = () => {
     const thinkingSteps = [
       "🧠 Analyzing your requirements...",
-      "📋 Planning application architecture...",
-      "🎨 Designing user interface layout...",
-      "🏗️ Setting up HTML structure...",
-      "💫 Creating responsive CSS styles...",
-      "⚡ Writing interactive JavaScript...",
-      "🔧 Optimizing for performance...",
+      "📋 Planning cyberpunk application architecture...",
+      "🎨 Designing neon user interface layout...",
+      "🏗️ Setting up semantic HTML structure...",
+      "💫 Creating responsive CSS with cyber effects...",
+      "⚡ Writing interactive JavaScript with animations...",
+      "🔧 Optimizing for performance and accessibility...",
       "📱 Ensuring mobile responsiveness...",
-      "✨ Adding professional animations...",
-      "🚀 Finalizing production code...",
-      "✅ Application ready for deployment!"
+      "✨ Adding professional cyberpunk animations...",
+      "☁️ Preparing for Puter.js cloud integration...",
+      "🚀 Finalizing production-ready code...",
+      "✅ Cyberpunk application ready for deployment!"
     ];
 
     setAiThinkingSteps([]);
@@ -99,7 +107,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     setMessages((prev) => [...prev, {
       id: thinkingId,
       role: "assistant",
-      content: "🤖 AI Engineer is building your professional web application...",
+      content: "🤖 AI Engineer is building your professional cyberpunk web application...",
       timestamp: Date.now(),
     }]);
     
@@ -113,7 +121,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       setCurrentThinkingStep('');
       
       if (response.error) {
-        addMessage("assistant", `I encountered an issue: ${response.error}. But I've created a professional application for you using my advanced capabilities!`);
+        addMessage("assistant", `I encountered an issue: ${response.error}. But I've created a professional cyberpunk application for you using my advanced capabilities!`);
       }
       
       const { html = "", css = "", js = "" } = response.code || {};
@@ -122,21 +130,31 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       if (html || css || js) {
         onCodeGenerated(html, css, js);
         console.log('✅ Code generated and preview updated');
+        
+        // Auto-save to Puter.js cloud if authenticated
+        if (isAuthenticated && (html || css || js)) {
+          const projectName = `cyberpunk_app_${Date.now()}`;
+          await saveProject(projectName, { html, css, js });
+        }
       }
       
       // Add the AI's response message
-      let responseMessage = response.explanation || "I've created your professional web application! Check the preview panel to see your modern, responsive application in action.";
+      let responseMessage = response.explanation || "I've created your professional cyberpunk web application! Check the preview panel to see your modern, responsive application with neon effects in action.";
       
       if (usingFreeAPI) {
-        responseMessage += "\n\n💡 Built with free Puter.js AI - professional results without API costs!";
+        responseMessage += "\n\n💡 Built with free Puter.js AI - professional cyberpunk results without API costs!";
+      }
+      
+      if (isAuthenticated) {
+        responseMessage += "\n\n☁️ Project automatically saved to your Puter.js cloud!";
       }
       
       addMessage("assistant", responseMessage);
       
       // Success notification
       if (html || css || js) {
-        toast.success("Professional Application Generated! 🎉", {
-          description: "Your enterprise-grade web app is ready in the preview panel",
+        toast.success("Professional Cyberpunk Application Generated! 🎉", {
+          description: "Your enterprise-grade web app with neon effects is ready",
           duration: 4000,
         });
       }
@@ -148,10 +166,10 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       setAiThinkingSteps([]);
       setCurrentThinkingStep('');
       
-      addMessage("assistant", "I encountered an issue, but I've generated a professional application for you using my built-in capabilities. You can refine it by describing what you'd like to change!");
+      addMessage("assistant", "I encountered an issue, but I've generated a professional cyberpunk application for you using my built-in capabilities. You can refine it by describing what you'd like to change!");
       
       toast.error("Generation Error", {
-        description: "Used fallback mode to create your professional app",
+        description: "Used fallback mode to create your professional cyberpunk app",
       });
     }
   };
@@ -179,9 +197,15 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
             <Brain className="h-3.5 w-3.5 text-white" />
           </div>
           <div className="flex flex-col">
-            <h2 className="font-medium text-sm bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400">AI Engineer</h2>
-            <span className="text-xs text-cyan-300/70">
+            <h2 className="font-medium text-sm bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400">Cyberpunk AI Engineer</h2>
+            <span className="text-xs text-cyan-300/70 flex items-center gap-1">
               {usingFreeAPI ? "Powered by Puter.js (Free GPT-4o)" : `${apiProvider} API`}
+              {isAuthenticated && (
+                <>
+                  <Cloud className="h-3 w-3 text-green-400" />
+                  <span className="text-green-400">Cloud Connected</span>
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -192,22 +216,41 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
               variant="ghost" 
               size="icon"
               className="hover:bg-slate-800/50 h-8 w-8 rounded-full"
-              title="AI Settings"
+              title="Settings"
             >
               <Settings className="h-4 w-4 text-cyan-400" />
             </Button>
           </SheetTrigger>
           <SheetContent className="cyber-panel border-l border-cyan-500/30 w-[350px] sm:w-[450px] backdrop-blur-xl">
-            <AISettings 
-              onClose={() => {}}
-              apiKey={apiKey || ""}
-              usingFreeAPI={usingFreeAPI}
-              onSave={handleApiSettingsChange}
-              apiProvider={apiProvider}
-              modelType={modelType}
-              onClear={clearApiKey}
-              onSetFreeAPI={setFreeAPI}
-            />
+            <Tabs defaultValue="ai" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-slate-800/50">
+                <TabsTrigger value="ai" className="data-[state=active]:bg-cyan-500/20">
+                  <Brain className="h-4 w-4 mr-2" />
+                  AI Settings
+                </TabsTrigger>
+                <TabsTrigger value="cloud" className="data-[state=active]:bg-purple-500/20">
+                  <Cloud className="h-4 w-4 mr-2" />
+                  Puter.js Cloud
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="ai" className="mt-4">
+                <AISettings 
+                  onClose={() => {}}
+                  apiKey={apiKey || ""}
+                  usingFreeAPI={usingFreeAPI}
+                  onSave={handleApiSettingsChange}
+                  apiProvider={apiProvider}
+                  modelType={modelType}
+                  onClear={clearApiKey}
+                  onSetFreeAPI={setFreeAPI}
+                />
+              </TabsContent>
+              
+              <TabsContent value="cloud" className="mt-4">
+                <PuterAuth />
+              </TabsContent>
+            </Tabs>
           </SheetContent>
         </Sheet>
       </div>
@@ -218,13 +261,14 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
             <ChatMessage key={message.id} message={message} />
           ))}
           
-          {/* Lovable-style AI Thinking Steps Display */}
+          {/* Lovable-style AI Thinking Steps Display with Cyberpunk theme */}
           {isProcessing && (aiThinkingSteps.length > 0 || currentThinkingStep) && (
             <div className="bg-slate-800/50 border border-cyan-500/30 rounded-lg p-4 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-4 w-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse"></div>
-                <span className="text-sm text-cyan-300 font-medium">AI Engineer Building Process</span>
+                <span className="text-sm text-cyan-300 font-medium">Cyberpunk AI Engineering Process</span>
                 <Sparkles className="h-3 w-3 text-yellow-400 animate-pulse" />
+                {isAuthenticated && <Database className="h-3 w-3 text-green-400" title="Auto-saving to cloud" />}
               </div>
               
               {/* Current thinking step with emphasis */}
@@ -248,7 +292,8 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
               </div>
               
               <div className="mt-3 text-xs text-slate-400 italic">
-                Professional code generation in progress...
+                Professional cyberpunk code generation in progress...
+                {isAuthenticated && " • Auto-saving to Puter.js cloud"}
               </div>
             </div>
           )}

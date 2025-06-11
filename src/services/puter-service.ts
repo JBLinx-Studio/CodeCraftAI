@@ -8,9 +8,9 @@ declare global {
 export class PuterService {
   private static instance: PuterService;
   private puter: any;
+  private isInitialized: boolean = false;
 
   private constructor() {
-    this.puter = window.puter;
     this.initializePuter();
   }
 
@@ -25,25 +25,86 @@ export class PuterService {
     // Wait for Puter to be available
     if (typeof window !== 'undefined' && window.puter) {
       this.puter = window.puter;
-      console.log('🚀 Puter.js initialized successfully - Free AI, Cloud, Auth ready!');
+      this.isInitialized = true;
+      console.log('🚀 Puter.js initialized - Free AI, Cloud, Auth, KV Database ready!');
     } else {
       // Retry after a short delay
       setTimeout(() => this.initializePuter(), 100);
     }
   }
 
-  // Enhanced AI Chat using Puter's GPT-4o mini with Lovable-style prompting
+  // Wait for initialization
+  private async waitForInit(): Promise<void> {
+    while (!this.isInitialized) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  // ===== AUTHENTICATION SERVICES =====
+  
+  async isSignedIn(): Promise<boolean> {
+    try {
+      await this.waitForInit();
+      return await this.puter.auth.isSignedIn();
+    } catch (error) {
+      console.error('Error checking sign-in status:', error);
+      return false;
+    }
+  }
+
+  async signIn(): Promise<{ success: boolean; user?: any; error?: string }> {
+    try {
+      await this.waitForInit();
+      const user = await this.puter.auth.signIn();
+      console.log('✅ User signed in successfully:', user);
+      return { success: true, user };
+    } catch (error) {
+      console.error('❌ Sign in error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Sign in failed' 
+      };
+    }
+  }
+
+  async signOut(): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.waitForInit();
+      await this.puter.auth.signOut();
+      console.log('✅ User signed out successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Sign out error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Sign out failed' 
+      };
+    }
+  }
+
+  async getCurrentUser(): Promise<any | null> {
+    try {
+      await this.waitForInit();
+      if (await this.isSignedIn()) {
+        return await this.puter.auth.getUser();
+      }
+      return null;
+    } catch (error) {
+      console.error('❌ Error getting user info:', error);
+      return null;
+    }
+  }
+
+  // ===== AI SERVICES =====
+  
   async generateAIResponse(prompt: string, chatHistory?: Array<{role: string, content: string}>): Promise<{
     success: boolean;
     text?: string;
     error?: string;
   }> {
     try {
-      if (!this.puter) {
-        throw new Error('Puter.js not initialized - please refresh the page');
-      }
-
-      console.log('🤖 Generating response with Puter.js GPT-4o mini...');
+      await this.waitForInit();
+      console.log('🤖 Generating response with Puter.js AI (GPT-4o mini)...');
 
       // Include chat history in the prompt for context
       let fullPrompt = prompt;
@@ -72,7 +133,6 @@ export class PuterService {
     }
   }
 
-  // Enhanced code generation with Lovable-style professional output
   async generateCode(userPrompt: string, chatHistory?: Array<{role: string, content: string}>): Promise<{
     success: boolean;
     code?: {
@@ -84,7 +144,8 @@ export class PuterService {
     error?: string;
   }> {
     try {
-      console.log('🛠️ Starting professional code generation...');
+      await this.waitForInit();
+      console.log('🛠️ Starting professional code generation with Puter.js AI...');
       
       const enhancedPrompt = this.createLovableStylePrompt(userPrompt, chatHistory);
       const response = await this.generateAIResponse(enhancedPrompt, chatHistory);
@@ -114,35 +175,232 @@ export class PuterService {
     }
   }
 
+  // ===== CLOUD STORAGE SERVICES =====
+  
+  async saveFile(path: string, content: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.waitForInit();
+      await this.puter.fs.write(path, content);
+      console.log(`💾 File saved to cloud: ${path}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error saving file:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'File save failed' 
+      };
+    }
+  }
+
+  async loadFile(path: string): Promise<{ success: boolean; content?: string; error?: string }> {
+    try {
+      await this.waitForInit();
+      const fileContent = await this.puter.fs.read(path);
+      const content = await fileContent.text();
+      console.log(`📂 File loaded from cloud: ${path}`);
+      return { success: true, content };
+    } catch (error) {
+      console.error('❌ Error loading file:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'File load failed' 
+      };
+    }
+  }
+
+  async listFiles(directory: string = '/'): Promise<{ success: boolean; files?: any[]; error?: string }> {
+    try {
+      await this.waitForInit();
+      const files = await this.puter.fs.readdir(directory);
+      console.log(`📁 Listed files in: ${directory}`);
+      return { success: true, files };
+    } catch (error) {
+      console.error('❌ Error listing files:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'File listing failed' 
+      };
+    }
+  }
+
+  async deleteFile(path: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.waitForInit();
+      await this.puter.fs.delete(path);
+      console.log(`🗑️ File deleted from cloud: ${path}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error deleting file:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'File deletion failed' 
+      };
+    }
+  }
+
+  // ===== KEY-VALUE DATABASE SERVICES =====
+  
+  async setKV(key: string, value: any): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.waitForInit();
+      await this.puter.kv.set(key, JSON.stringify(value));
+      console.log(`🔑 KV set: ${key}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error setting KV:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'KV set failed' 
+      };
+    }
+  }
+
+  async getKV(key: string): Promise<{ success: boolean; value?: any; error?: string }> {
+    try {
+      await this.waitForInit();
+      const value = await this.puter.kv.get(key);
+      const parsedValue = value ? JSON.parse(value) : null;
+      console.log(`🔑 KV get: ${key}`);
+      return { success: true, value: parsedValue };
+    } catch (error) {
+      console.error('❌ Error getting KV:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'KV get failed' 
+      };
+    }
+  }
+
+  async deleteKV(key: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.waitForInit();
+      await this.puter.kv.del(key);
+      console.log(`🔑 KV deleted: ${key}`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error deleting KV:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'KV delete failed' 
+      };
+    }
+  }
+
+  // ===== PROJECT MANAGEMENT =====
+  
+  async saveProject(projectName: string, code: {html: string, css: string, js: string}): Promise<{ success: boolean; error?: string }> {
+    try {
+      const projectData = {
+        name: projectName,
+        code,
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        cyberpunkTheme: true
+      };
+
+      const result = await this.saveFile(`projects/${projectName}.json`, JSON.stringify(projectData, null, 2));
+      if (result.success) {
+        console.log(`💾 Project "${projectName}" saved to Puter cloud`);
+        
+        // Also save to KV for quick access
+        await this.setKV(`project:${projectName}`, projectData);
+      }
+      return result;
+    } catch (error) {
+      console.error('❌ Error saving project:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Project save failed' 
+      };
+    }
+  }
+
+  async loadProject(projectName: string): Promise<{ success: boolean; code?: {html: string, css: string, js: string}; error?: string }> {
+    try {
+      const result = await this.loadFile(`projects/${projectName}.json`);
+      if (result.success && result.content) {
+        const projectData = JSON.parse(result.content);
+        console.log(`📂 Project "${projectName}" loaded from Puter cloud`);
+        return { success: true, code: projectData.code };
+      }
+      return { success: false, error: result.error || 'Project not found' };
+    } catch (error) {
+      console.error('❌ Error loading project:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Project load failed' 
+      };
+    }
+  }
+
+  async listProjects(): Promise<{ success: boolean; projects?: string[]; error?: string }> {
+    try {
+      const result = await this.listFiles('projects');
+      if (result.success && result.files) {
+        const projects = result.files
+          .filter(file => file.name.endsWith('.json'))
+          .map(file => file.name.replace('.json', ''));
+        return { success: true, projects };
+      }
+      return { success: false, error: result.error || 'Failed to list projects' };
+    } catch (error) {
+      console.error('❌ Error listing projects:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Project listing failed' 
+      };
+    }
+  }
+
+  // ===== USER PREFERENCES =====
+  
+  async saveUserPreference(key: string, value: any): Promise<{ success: boolean; error?: string }> {
+    return await this.setKV(`pref:${key}`, value);
+  }
+
+  async getUserPreference(key: string): Promise<{ success: boolean; value?: any; error?: string }> {
+    return await this.getKV(`pref:${key}`);
+  }
+
+  // ===== HELPER METHODS =====
+  
   private createLovableStylePrompt(userPrompt: string, chatHistory?: Array<{role: string, content: string}>): string {
     return `You are a professional fullstack AI engineer like Lovable AI. Create a complete, production-ready web application for: "${userPrompt}"
 
 🎯 REQUIREMENTS:
-- Generate COMPLETE, FUNCTIONAL, PROFESSIONAL web applications
+- Generate COMPLETE, FUNCTIONAL, PROFESSIONAL web applications with cyberpunk aesthetic
 - Modern HTML5 semantic structure with accessibility
-- Responsive CSS with animations, gradients, and modern design
-- Interactive JavaScript with proper error handling
-- Professional UI/UX with smooth transitions
-- Mobile-first responsive design
+- Responsive CSS with cyberpunk theme, neon colors, gradients, and futuristic animations
+- Interactive JavaScript with proper error handling and cyberpunk UI effects
+- Professional UI/UX with smooth neon transitions and glitch effects
+- Mobile-first responsive design with cyberpunk styling
 - Clean, maintainable code architecture
+
+🎨 CYBERPUNK THEME REQUIREMENTS:
+- Use dark backgrounds (slate-900, black)
+- Neon accent colors (cyan, purple, green, blue)
+- Glowing effects and shadows
+- Futuristic typography
+- Grid patterns and tech-inspired elements
+- Animated transitions and hover effects
 
 FORMAT RESPONSE EXACTLY AS:
 
 === HTML ===
-[Complete semantic HTML5 structure]
+[Complete semantic HTML5 structure with cyberpunk elements]
 
 === CSS ===
-[Modern responsive CSS with professional styling]
+[Modern responsive CSS with cyberpunk styling, neon effects, and professional design]
 
 === JS ===
-[Clean functional JavaScript with interactivity]
+[Clean functional JavaScript with cyberpunk interactions and smooth animations]
 
 === EXPLANATION ===
-[Brief technical overview of the application]
+[Brief technical overview of the cyberpunk application]
 
 ${chatHistory && chatHistory.length > 0 ? `\nContext: ${chatHistory.slice(-3).map(msg => `${msg.role}: ${msg.content}`).join('\n')}` : ''}
 
-Create the application now:`;
+Create the cyberpunk application now:`;
   }
 
   private parseCodeResponse(response: string): {
@@ -193,71 +451,70 @@ Create the application now:`;
 
     return {
       code: {
-        html: sections.html || this.generateProfessionalHTML(),
-        css: sections.css || this.generateProfessionalCSS(),
-        js: sections.js || this.generateProfessionalJS()
+        html: sections.html || this.generateCyberpunkHTML(),
+        css: sections.css || this.generateCyberpunkCSS(),
+        js: sections.js || this.generateCyberpunkJS()
       },
-      explanation: sections.explanation || 'Professional web application generated with Puter.js AI'
+      explanation: sections.explanation || 'Cyberpunk web application generated with Puter.js AI'
     };
   }
 
   private fallbackCodeExtraction(response: string) {
-    // Try to extract any HTML, CSS, JS from code blocks
     const htmlMatch = response.match(/```html([\s\S]*?)```/i) || response.match(/<html[\s\S]*?<\/html>/i);
     const cssMatch = response.match(/```css([\s\S]*?)```/i);
     const jsMatch = response.match(/```javascript([\s\S]*?)```/i) || response.match(/```js([\s\S]*?)```/i);
 
     return {
       code: {
-        html: htmlMatch ? (htmlMatch[1] || htmlMatch[0]) : this.generateProfessionalHTML(),
-        css: cssMatch ? cssMatch[1] : this.generateProfessionalCSS(),
-        js: jsMatch ? jsMatch[1] : this.generateProfessionalJS()
+        html: htmlMatch ? (htmlMatch[1] || htmlMatch[0]) : this.generateCyberpunkHTML(),
+        css: cssMatch ? cssMatch[1] : this.generateCyberpunkCSS(),
+        js: jsMatch ? jsMatch[1] : this.generateCyberpunkJS()
       },
-      explanation: 'Professional web application generated with AI assistance.'
+      explanation: 'Cyberpunk web application generated with Puter.js AI assistance.'
     };
   }
 
-  private generateProfessionalHTML(): string {
+  private generateCyberpunkHTML(): string {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Web App</title>
+    <title>Cyberpunk Web App</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <header class="hero-section">
+    <div class="cyberpunk-container">
+        <header class="cyber-hero">
             <div class="container">
-                <h1 class="hero-title">Professional Web Application</h1>
-                <p class="hero-subtitle">Built with advanced AI technology</p>
-                <button class="cta-button" id="getStarted">Get Started</button>
+                <h1 class="cyber-title">CYBERPUNK WEB APP</h1>
+                <p class="cyber-subtitle">POWERED BY PUTER.JS AI</p>
+                <button class="cyber-button" id="activateSystem">ACTIVATE SYSTEM</button>
             </div>
         </header>
         
-        <main class="main-content">
+        <main class="cyber-main">
             <div class="container">
-                <section class="features-grid">
-                    <div class="feature-card">
-                        <h3>Feature One</h3>
-                        <p>Professional feature description</p>
+                <section class="cyber-grid">
+                    <div class="cyber-card">
+                        <h3>NEURAL INTERFACE</h3>
+                        <p>Advanced cyberpunk functionality</p>
                     </div>
-                    <div class="feature-card">
-                        <h3>Feature Two</h3>
-                        <p>Advanced functionality showcase</p>
+                    <div class="cyber-card">
+                        <h3>QUANTUM PROCESSING</h3>
+                        <p>High-performance digital operations</p>
                     </div>
-                    <div class="feature-card">
-                        <h3>Feature Three</h3>
-                        <p>Modern web application capabilities</p>
+                    <div class="cyber-card">
+                        <h3>MATRIX ACCESS</h3>
+                        <p>Direct connection to the digital realm</p>
                     </div>
                 </section>
             </div>
         </main>
         
-        <footer class="app-footer">
+        <footer class="cyber-footer">
             <div class="container">
-                <p>&copy; 2024 Professional Web App. Built with AI.</p>
+                <p>&copy; 2024 CYBERPUNK SYSTEMS. POWERED BY PUTER.JS</p>
             </div>
         </footer>
     </div>
@@ -266,20 +523,18 @@ Create the application now:`;
 </html>`;
   }
 
-  private generateProfessionalCSS(): string {
-    return `/* Professional Web Application Styles */
+  private generateCyberpunkCSS(): string {
+    return `/* Cyberpunk Web Application Styles */
 :root {
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
-    --accent-color: #f093fb;
-    --text-primary: #2d3748;
-    --text-secondary: #4a5568;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f7fafc;
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-    --shadow-lg: 0 20px 25px rgba(0,0,0,0.1);
-    --radius: 12px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --cyber-primary: #00ffff;
+    --cyber-secondary: #ff00ff;
+    --cyber-accent: #00ff41;
+    --cyber-dark: #0a0a0a;
+    --cyber-darker: #000000;
+    --cyber-text: #ffffff;
+    --cyber-text-dim: #a0a0a0;
+    --cyber-glow: 0 0 20px currentColor;
+    --cyber-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -289,11 +544,19 @@ Create the application now:`;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    line-height: 1.6;
-    color: var(--text-primary);
-    background: var(--bg-primary);
+    font-family: 'Courier New', monospace;
+    background: var(--cyber-darker);
+    color: var(--cyber-text);
     overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%);
+}
+
+.cyberpunk-container {
+    min-height: 100vh;
+    position: relative;
 }
 
 .container {
@@ -302,120 +565,164 @@ body {
     padding: 0 2rem;
 }
 
-.app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
 /* Hero Section */
-.hero-section {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
+.cyber-hero {
+    background: linear-gradient(135deg, var(--cyber-dark) 0%, rgba(0, 255, 255, 0.1) 100%);
     padding: 6rem 0;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    border-bottom: 2px solid var(--cyber-primary);
 }
 
-.hero-section::before {
+.cyber-hero::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" fill-opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" fill-opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 98px,
+        rgba(0, 255, 255, 0.05) 100px
+    );
     pointer-events: none;
 }
 
-.hero-title {
+.cyber-title {
     font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 800;
+    font-weight: bold;
     margin-bottom: 1rem;
-    opacity: 0;
-    animation: fadeInUp 1s ease forwards;
+    color: var(--cyber-primary);
+    text-shadow: var(--cyber-glow);
+    letter-spacing: 0.1em;
+    animation: cyberpunkGlow 2s ease-in-out infinite alternate;
 }
 
-.hero-subtitle {
+.cyber-subtitle {
     font-size: 1.25rem;
     margin-bottom: 2rem;
-    opacity: 0.9;
-    opacity: 0;
-    animation: fadeInUp 1s ease 0.2s forwards;
+    color: var(--cyber-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
 }
 
-.cta-button {
-    background: white;
-    color: var(--primary-color);
-    border: none;
+.cyber-button {
+    background: transparent;
+    color: var(--cyber-primary);
+    border: 2px solid var(--cyber-primary);
     padding: 1rem 2rem;
     font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: var(--radius);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--shadow-lg);
-    opacity: 0;
-    animation: fadeInUp 1s ease 0.4s forwards;
+    transition: var(--cyber-transition);
+    position: relative;
+    overflow: hidden;
 }
 
-.cta-button:hover {
+.cyber-button:hover {
+    background: var(--cyber-primary);
+    color: var(--cyber-dark);
+    box-shadow: var(--cyber-glow);
     transform: translateY(-2px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+.cyber-button:active {
+    transform: translateY(0);
 }
 
 /* Main Content */
-.main-content {
-    flex: 1;
+.cyber-main {
     padding: 6rem 0;
-    background: var(--bg-secondary);
+    background: var(--cyber-dark);
 }
 
-.features-grid {
+.cyber-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
 }
 
-.feature-card {
-    background: white;
+.cyber-card {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid var(--cyber-primary);
     padding: 2rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-    border: 1px solid #e2e8f0;
+    position: relative;
+    transition: var(--cyber-transition);
+    overflow: hidden;
 }
 
-.feature-card:hover {
+.cyber-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 255, 0.1),
+        transparent
+    );
+    transition: var(--cyber-transition);
+}
+
+.cyber-card:hover::before {
+    left: 100%;
+}
+
+.cyber-card:hover {
+    border-color: var(--cyber-secondary);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
     transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
 }
 
-.feature-card h3 {
-    color: var(--primary-color);
+.cyber-card h3 {
+    color: var(--cyber-accent);
     margin-bottom: 1rem;
     font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.cyber-card p {
+    color: var(--cyber-text-dim);
+    line-height: 1.6;
 }
 
 /* Footer */
-.app-footer {
-    background: var(--text-primary);
-    color: white;
+.cyber-footer {
+    background: var(--cyber-darker);
+    border-top: 2px solid var(--cyber-primary);
     padding: 2rem 0;
     text-align: center;
 }
 
+.cyber-footer p {
+    color: var(--cyber-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.9rem;
+}
+
 /* Animations */
-@keyframes fadeInUp {
+@keyframes cyberpunkGlow {
     from {
-        opacity: 0;
-        transform: translateY(30px);
+        text-shadow: 
+            0 0 5px var(--cyber-primary),
+            0 0 10px var(--cyber-primary),
+            0 0 15px var(--cyber-primary);
     }
     to {
-        opacity: 1;
-        transform: translateY(0);
+        text-shadow: 
+            0 0 10px var(--cyber-primary),
+            0 0 20px var(--cyber-primary),
+            0 0 30px var(--cyber-primary);
     }
 }
 
@@ -425,138 +732,205 @@ body {
         padding: 0 1rem;
     }
     
-    .hero-section {
+    .cyber-hero {
         padding: 4rem 0;
     }
     
-    .main-content {
+    .cyber-main {
         padding: 4rem 0;
     }
     
-    .features-grid {
+    .cyber-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
 }`;
   }
 
-  private generateProfessionalJS(): string {
-    return `// Professional Web Application JavaScript
+  private generateCyberpunkJS(): string {
+    return `// Cyberpunk Web Application JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Professional Web App Initialized');
+    console.log('🚀 Cyberpunk System Initialized with Puter.js');
     
-    // Initialize application components
-    initializeHeroSection();
-    initializeFeatureCards();
-    initializeScrollAnimations();
+    // Initialize cyberpunk components
+    initializeCyberInterface();
+    initializeSystemCards();
+    addCyberEffects();
     
-    // Add professional interactions
+    // Add professional cyberpunk interactions
     addButtonInteractions();
-    addScrollEffects();
+    addGlitchEffects();
 });
 
-function initializeHeroSection() {
-    const ctaButton = document.getElementById('getStarted');
+function initializeCyberInterface() {
+    const activateButton = document.getElementById('activateSystem');
     
-    if (ctaButton) {
-        ctaButton.addEventListener('click', function(e) {
+    if (activateButton) {
+        activateButton.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Add click animation
+            // Cyberpunk activation effect
             this.style.transform = 'scale(0.95)';
+            this.style.boxShadow = '0 0 50px var(--cyber-primary)';
+            
             setTimeout(() => {
                 this.style.transform = '';
-            }, 150);
+                this.style.boxShadow = '';
+            }, 200);
             
-            // Professional interaction feedback
-            showNotification('Welcome to the professional experience!', 'success');
-            
-            // Smooth scroll to main content
-            document.querySelector('.main-content').scrollIntoView({
-                behavior: 'smooth'
-            });
+            // System activation feedback
+            showCyberNotification('SYSTEM ACTIVATED', 'success');
+            activateMatrixMode();
         });
     }
 }
 
-function initializeFeatureCards() {
-    const featureCards = document.querySelectorAll('.feature-card');
+function initializeSystemCards() {
+    const cyberCards = document.querySelectorAll('.cyber-card');
     
-    featureCards.forEach((card, index) => {
+    cyberCards.forEach((card, index) => {
         // Add entrance animation delay
-        card.style.animationDelay = \`\${index * 0.1}s\`;
+        card.style.animationDelay = \`\${index * 0.2}s\`;
         
-        // Add hover interactions
+        // Add cyberpunk hover interactions
         card.addEventListener('mouseenter', function() {
-            this.style.background = 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)';
+            this.style.background = 'rgba(0, 255, 255, 0.1)';
+            this.style.borderColor = 'var(--cyber-secondary)';
         });
         
         card.addEventListener('mouseleave', function() {
-            this.style.background = 'white';
+            this.style.background = 'rgba(0, 255, 255, 0.05)';
+            this.style.borderColor = 'var(--cyber-primary)';
         });
         
         // Add click interaction
         card.addEventListener('click', function() {
-            showNotification(\`Feature \${index + 1} activated!\`, 'info');
+            showCyberNotification(\`ACCESSING \${this.querySelector('h3').textContent}\`, 'info');
+            addGlitchEffect(this);
         });
     });
 }
 
-function initializeScrollAnimations() {
-    // Create intersection observer for scroll animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
+function addCyberEffects() {
+    // Add scanning line effect
+    const scanLine = document.createElement('div');
+    scanLine.className = 'cyber-scan-line';
+    scanLine.style.cssText = \`
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--cyber-primary), transparent);
+        z-index: 9999;
+        opacity: 0.7;
+        animation: cyberpunkScan 3s linear infinite;
+    \`;
+    document.body.appendChild(scanLine);
     
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
+    // Add CSS for scan animation
+    if (!document.querySelector('#cyber-animations')) {
+        const style = document.createElement('style');
+        style.id = 'cyber-animations';
+        style.textContent = \`
+            @keyframes cyberpunkScan {
+                0% { top: 0; opacity: 0; }
+                50% { opacity: 0.7; }
+                100% { top: 100vh; opacity: 0; }
             }
-        });
-    }, observerOptions);
-    
-    // Observe all animatable elements
-    document.querySelectorAll('.feature-card').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-        observer.observe(el);
-    });
+            
+            .cyber-glitch {
+                animation: cyberpunkGlitch 0.3s ease-in-out;
+            }
+            
+            @keyframes cyberpunkGlitch {
+                0%, 100% { transform: translateX(0); }
+                20% { transform: translateX(-2px); }
+                40% { transform: translateX(2px); }
+                60% { transform: translateX(-1px); }
+                80% { transform: translateX(1px); }
+            }
+        \`;
+        document.head.appendChild(style);
+    }
 }
 
 function addButtonInteractions() {
-    // Add professional button interactions throughout the app
-    document.querySelectorAll('button').forEach(button => {
+    // Add cyberpunk button interactions throughout the app
+    document.querySelectorAll('button, .cyber-button').forEach(button => {
         button.addEventListener('mousedown', function() {
             this.style.transform = 'scale(0.98)';
+            this.style.filter = 'brightness(1.2)';
         });
         
         button.addEventListener('mouseup', function() {
             this.style.transform = '';
+            this.style.filter = '';
         });
     });
 }
 
-function addScrollEffects() {
-    // Add parallax and scroll effects
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const heroSection = document.querySelector('.hero-section');
-        
-        if (heroSection) {
-            const speed = scrolled * 0.5;
-            heroSection.style.transform = \`translateY(\${speed}px)\`;
+function addGlitchEffects() {
+    // Random glitch effects on title
+    setInterval(() => {
+        const title = document.querySelector('.cyber-title');
+        if (title && Math.random() < 0.1) {
+            addGlitchEffect(title);
         }
-    });
+    }, 5000);
 }
 
-function showNotification(message, type = 'info') {
-    // Create professional notification system
+function addGlitchEffect(element) {
+    element.classList.add('cyber-glitch');
+    setTimeout(() => {
+        element.classList.remove('cyber-glitch');
+    }, 300);
+}
+
+function activateMatrixMode() {
+    // Create matrix-style background effect
+    const matrix = document.createElement('div');
+    matrix.style.cssText = \`
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 65, 0.03) 2px,
+            rgba(0, 255, 65, 0.03) 4px
+        );
+        animation: matrixScroll 20s linear infinite;
+    \`;
+    
+    document.body.appendChild(matrix);
+    
+    // Add matrix scroll animation
+    const style = document.createElement('style');
+    style.textContent = \`
+        @keyframes matrixScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+    \`;
+    document.head.appendChild(style);
+    
+    // Remove after animation
+    setTimeout(() => {
+        document.body.removeChild(matrix);
+        document.head.removeChild(style);
+    }, 3000);
+}
+
+function showCyberNotification(message, type = 'info') {
+    // Create cyberpunk notification system
     const notification = document.createElement('div');
-    notification.className = \`notification notification--\${type}\`;
+    notification.className = \`cyber-notification cyber-notification--\${type}\`;
     notification.textContent = message;
     
     // Notification styles
@@ -564,17 +938,23 @@ function showNotification(message, type = 'info') {
         position: 'fixed',
         top: '20px',
         right: '20px',
-        background: type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#4299e1',
-        color: 'white',
+        background: type === 'success' ? 'rgba(0, 255, 65, 0.1)' : 
+                   type === 'error' ? 'rgba(255, 0, 100, 0.1)' : 'rgba(0, 255, 255, 0.1)',
+        border: \`2px solid \${type === 'success' ? 'var(--cyber-accent)' : 
+                                type === 'error' ? 'var(--cyber-secondary)' : 'var(--cyber-primary)'}\`,
+        color: 'var(--cyber-text)',
         padding: '1rem 1.5rem',
-        borderRadius: '12px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-        zIndex: '1000',
+        zIndex: '9999',
         transform: 'translateX(100%)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         maxWidth: '300px',
         fontSize: '0.9rem',
-        fontWeight: '500'
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        backdropFilter: 'blur(10px)',
+        boxShadow: \`0 0 20px \${type === 'success' ? 'var(--cyber-accent)' : 
+                                    type === 'error' ? 'var(--cyber-secondary)' : 'var(--cyber-primary)'}\`
     });
     
     document.body.appendChild(notification);
@@ -593,101 +973,21 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Add professional error handling
+// Add cyberpunk error handling
 window.addEventListener('error', function(e) {
-    console.error('Application Error:', e.error);
-    showNotification('Something went wrong. Please try again.', 'error');
+    console.error('SYSTEM ERROR:', e.error);
+    showCyberNotification('SYSTEM ERROR DETECTED', 'error');
 });
 
 // Add performance monitoring
 if ('performance' in window) {
     window.addEventListener('load', function() {
         const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-        console.log(\`⚡ App loaded in \${loadTime}ms\`);
+        console.log(\`⚡ CYBERPUNK SYSTEM LOADED IN \${loadTime}ms\`);
     });
 }
 
-console.log('✅ Professional Web Application Ready');`;
-  }
-
-  // Cloud storage operations
-  async saveProject(projectName: string, code: {html: string, css: string, js: string}): Promise<boolean> {
-    try {
-      const projectData = {
-        name: projectName,
-        code,
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      };
-
-      await this.puter.fs.write(`projects/${projectName}.json`, JSON.stringify(projectData, null, 2));
-      console.log(`💾 Project "${projectName}" saved to cloud successfully`);
-      return true;
-    } catch (error) {
-      console.error('❌ Error saving project:', error);
-      return false;
-    }
-  }
-
-  async loadProject(projectName: string): Promise<{html: string, css: string, js: string} | null> {
-    try {
-      const fileContent = await this.puter.fs.read(`projects/${projectName}.json`);
-      const projectData = JSON.parse(await fileContent.text());
-      console.log(`📂 Project "${projectName}" loaded from cloud`);
-      return projectData.code;
-    } catch (error) {
-      console.error('❌ Error loading project:', error);
-      return null;
-    }
-  }
-
-  // Key-value store for user preferences
-  async saveUserPreference(key: string, value: any): Promise<boolean> {
-    try {
-      await this.puter.kv.set(key, JSON.stringify(value));
-      return true;
-    } catch (error) {
-      console.error('Error saving preference:', error);
-      return false;
-    }
-  }
-
-  async getUserPreference(key: string): Promise<any | null> {
-    try {
-      const value = await this.puter.kv.get(key);
-      return value ? JSON.parse(value) : null;
-    } catch (error) {
-      console.error('Error getting preference:', error);
-      return null;
-    }
-  }
-
-  // Authentication methods
-  async isSignedIn(): Promise<boolean> {
-    try {
-      return this.puter.auth.isSignedIn();
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async signIn(): Promise<boolean> {
-    try {
-      await this.puter.auth.signIn();
-      return true;
-    } catch (error) {
-      console.error('Sign in error:', error);
-      return false;
-    }
-  }
-
-  async getUserInfo(): Promise<any | null> {
-    try {
-      return await this.puter.auth.getUser();
-    } catch (error) {
-      console.error('Error getting user info:', error);
-      return null;
-    }
+console.log('✅ CYBERPUNK NEURAL INTERFACE READY');`;
   }
 }
 
