@@ -52,7 +52,12 @@
         const base = '/CodeCraftAI/';
         
         if (path !== base && path !== base.slice(0, -1)) {
-            window.location.replace(base + '#' + path.replace(base, ''));
+            const redirectPath = path.replace(base, '');
+            if (redirectPath) {
+                window.location.replace(base + '#/' + redirectPath);
+            } else {
+                window.location.replace(base);
+            }
         } else {
             window.location.replace(base);
         }
