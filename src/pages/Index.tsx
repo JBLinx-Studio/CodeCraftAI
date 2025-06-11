@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import { ChatPanel } from "@/components/ChatPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import { Toaster } from "@/components/ui/toaster";
-import { Code, Sparkles, Zap } from "lucide-react";
+import { Code, Sparkles, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -21,79 +21,79 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Header />
       
       <main className="flex-1 mt-16 flex flex-col">
         {showWelcome && (
-          <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 text-white">
-            <div className="container py-12 px-4 text-center relative z-10">
-              <div className="max-w-4xl mx-auto">
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-white text-sm font-medium mb-6 border border-white/20">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Powered by Puter.js Free AI • No API Keys Required</span>
-                </div>
-                
-                <h1 className="font-heading text-4xl sm:text-6xl font-bold mb-6">
-                  Build anything with <br className="hidden md:block" />
-                  <span className="text-yellow-300">AI assistance</span>
-                </h1>
-                
-                <p className="text-xl max-w-3xl mx-auto text-blue-100 mb-8 font-light">
-                  Chat with AI to create web applications instantly. No coding experience required.
-                  Just describe what you want and watch it come to life.
-                </p>
-                
-                <Button 
-                  onClick={() => setShowWelcome(false)}
-                  size="lg"
-                  className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 text-lg"
-                >
-                  <Zap className="h-5 w-5 mr-2" />
-                  Start Building
-                </Button>
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+            <div className="container max-w-4xl mx-auto text-center px-4">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <Sparkles className="h-4 w-4" />
+                Free AI • Powered by Puter.js • No API Keys Required
               </div>
+              
+              <h1 className="text-5xl font-bold mb-6">
+                Build web apps with 
+                <span className="text-yellow-300"> AI assistance</span>
+              </h1>
+              
+              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                Just describe what you want to build and watch it come to life instantly. 
+                No coding experience required.
+              </p>
+              
+              <Button 
+                onClick={() => setShowWelcome(false)}
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 text-lg"
+              >
+                <Zap className="h-5 w-5 mr-2" />
+                Start Building Now
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-purple-600/90 to-cyan-600/90"></div>
           </div>
         )}
         
-        <div className="container flex-1 flex flex-col lg:flex-row gap-4 py-6">
-          {/* Left Panel - AI Chat */}
-          <div className="lg:w-1/2 flex flex-col">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex-1 flex flex-col min-h-[600px]">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-800">
+        <div className="flex-1 container mx-auto p-4">
+          <div className="grid lg:grid-cols-2 gap-6 h-full">
+            {/* Chat Panel - Left Side */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-700 p-4 border-b">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
                     <Code className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-lg">AI Assistant</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Powered by Puter.js Free AI</p>
+                    <h2 className="font-semibold text-lg">💬 Chat with AI</h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Type your idea here → AI builds it for you
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-h-[500px]">
                 <ChatPanel onCodeGenerated={handleCodeGenerated} />
               </div>
             </div>
-          </div>
-          
-          {/* Right Panel - Live Preview */}
-          <div className="lg:w-1/2 flex flex-col">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex-1 flex flex-col min-h-[600px]">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800">
+            
+            {/* Preview Panel - Right Side */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-700 p-4 border-b">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
                     <Sparkles className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-lg">Live Preview</h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">See your creation in real-time</p>
+                    <h2 className="font-semibold text-lg">👀 Live Preview</h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Watch your app appear here instantly
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-h-[500px]">
                 <PreviewPanel 
                   html={html} 
                   css={css} 
@@ -104,49 +104,44 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Feature highlights */}
-        <div className="container py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
-              <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center mx-auto mb-4">
-                <Code className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        {/* Simple How It Works */}
+        {showWelcome && (
+          <div className="bg-white dark:bg-slate-800 py-16">
+            <div className="container mx-auto px-4">
+              <h3 className="text-2xl font-bold text-center mb-12">How It Works</h3>
+              <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-blue-600">1</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">Describe Your Idea</h4>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Tell the AI what you want to build in plain English
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-purple-600">2</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">AI Builds It</h4>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Watch as the AI creates your app with HTML, CSS, and JavaScript
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="h-16 w-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-green-600">3</span>
+                  </div>
+                  <h4 className="font-semibold mb-2">See It Live</h4>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Your app appears instantly in the preview panel
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">AI-Powered</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">No API keys needed. Free AI assistance powered by Puter.js</p>
-            </div>
-            
-            <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
-              <div className="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Instant Preview</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">See your applications come to life in real-time</p>
-            </div>
-            
-            <div className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
-              <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="font-semibold mb-2">No Coding Required</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Just describe what you want in plain English</p>
             </div>
           </div>
-        </div>
+        )}
       </main>
-      
-      <footer className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-        <div className="container py-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-              <Code className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-semibold">CodeCraft AI</span>
-          </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Build web applications with AI assistance • Powered by Puter.js
-          </p>
-        </div>
-      </footer>
       
       <Toaster />
     </div>
