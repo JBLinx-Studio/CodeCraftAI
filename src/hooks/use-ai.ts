@@ -107,7 +107,7 @@ export function useAI() {
     
     try {
       // Always try to use the configured AI client first
-      const aiClient = AIClientFactory.createClient({
+      const aiClient = await AIClientFactory.createClient({
         apiKey: apiKey || FREE_API_KEY,
         provider: apiProvider,
         modelType
