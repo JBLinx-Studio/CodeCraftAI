@@ -482,5 +482,3 @@ export class FreeAIClient {
     return 'web application';
   }
 }
-
-export type { FreeClientOptions };
