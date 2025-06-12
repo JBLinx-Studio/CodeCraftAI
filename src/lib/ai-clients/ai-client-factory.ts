@@ -3,7 +3,7 @@ import { AIClient, AIClientOptions, FREE_API_KEY } from "./base-client";
 import { OpenAIClient, OpenAIClientOptions } from "./openai-client";
 import { HuggingFaceClient, HuggingFaceClientOptions } from "./huggingface-client";
 import { PerplexityClient, PERPLEXITY_MODELS, PerplexityClientOptions } from "./perplexity-client";
-import { FreeAIClient, FreeClientOptions } from "./free-client";
+import { FreeAPIClient, FreeClientOptions } from "./free-client";
 import { PuterClient, PuterClientOptions } from "./puter-client";
 import { puterService } from "@/services/puter-service";
 import { AIProvider } from "@/types";
