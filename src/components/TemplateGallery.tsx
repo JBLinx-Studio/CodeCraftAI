@@ -37,9 +37,9 @@ const TemplateGallery = ({
 
   const handleTemplateSelect = (template: any) => {
     onSelectTemplate({
-      html: template.html,
-      css: template.css,
-      js: template.js
+      html: template.html || `<!DOCTYPE html><html><head><title>${template.name}</title></head><body><h1>${template.name}</h1><p>${template.description}</p></body></html>`,
+      css: template.css || `body { font-family: Arial, sans-serif; margin: 40px; }`,
+      js: template.js || `console.log('${template.name} template loaded');`
     });
     toast.success(`${template.name} template loaded!`);
   };
@@ -58,9 +58,9 @@ const TemplateGallery = ({
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="px-3 py-2 border rounded-md bg-background"
         >
-          {categories.map((category: string) => (
+          {categories.map((category) => (
             <option key={category} value={category}>
-              {(category as string).charAt(0).toUpperCase() + (category as string).slice(1)}
+              {category.charAt(0).toUpperCase() + category.slice(1)}
             </option>
           ))}
         </select>
