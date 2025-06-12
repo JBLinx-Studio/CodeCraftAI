@@ -133,6 +133,95 @@ export class FreeAIClient {
   }
   
   private generateCSS(prompt: string): string {
+    const isCalculator = prompt.toLowerCase().includes('calculator') || prompt.toLowerCase().includes('calc');
+    
+    if (isCalculator) {
+      return `
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: 'Arial', sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .calculator-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+        }
+        
+        .calculator {
+          background: #2c3e50;
+          border-radius: 15px;
+          padding: 20px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+          max-width: 300px;
+        }
+        
+        .display {
+          margin-bottom: 15px;
+        }
+        
+        #display {
+          width: 100%;
+          height: 60px;
+          font-size: 24px;
+          text-align: right;
+          padding: 0 15px;
+          border: none;
+          border-radius: 10px;
+          background: #34495e;
+          color: white;
+          font-weight: bold;
+        }
+        
+        .buttons {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+        }
+        
+        button {
+          height: 50px;
+          border: none;
+          border-radius: 10px;
+          font-size: 18px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s;
+          background: #3498db;
+          color: white;
+        }
+        
+        button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+          transform: translateY(0);
+        }
+        
+        .equals {
+          background: #e74c3c;
+          grid-row: span 2;
+        }
+        
+        .zero {
+          grid-column: span 2;
+        }
+      `;
+    }
+    
     return `
       * {
         margin: 0;
@@ -170,6 +259,12 @@ export class FreeAIClient {
         margin-bottom: 20px;
       }
       
+      .hero-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 30px;
+      }
+      
       .cta-button, .action-button {
         background: linear-gradient(45deg, #ff6b6b, #ee5a24);
         color: white;
@@ -184,10 +279,173 @@ export class FreeAIClient {
       .cta-button:hover, .action-button:hover {
         transform: translateY(-3px);
       }
+      
+      .features-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+      }
+      
+      .feature-card {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      
+      .todo-app {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      }
+      
+      .todo-input-section {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      
+      #todoInput {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 1rem;
+      }
+      
+      .todo-list {
+        list-style: none;
+      }
+      
+      .todo-item {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
     `;
   }
   
   private generateJS(prompt: string): string {
+    const isTodo = prompt.toLowerCase().includes('todo') || prompt.toLowerCase().includes('task');
+    const isCalculator = prompt.toLowerCase().includes('calculator') || prompt.toLowerCase().includes('calc');
+    
+    if (isCalculator) {
+      return `
+        let currentInput = '0';
+        let shouldResetDisplay = false;
+        
+        function updateDisplay() {
+          document.getElementById('display').value = currentInput;
+        }
+        
+        function clearDisplay() {
+          currentInput = '0';
+          updateDisplay();
+        }
+        
+        function deleteLast() {
+          if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+          } else {
+            currentInput = '0';
+          }
+          updateDisplay();
+        }
+        
+        function appendToDisplay(value) {
+          if (shouldResetDisplay) {
+            currentInput = '';
+            shouldResetDisplay = false;
+          }
+          
+          if (currentInput === '0' && value !== '.') {
+            currentInput = value;
+          } else {
+            currentInput += value;
+          }
+          updateDisplay();
+        }
+        
+        function calculate() {
+          try {
+            let result = eval(currentInput.replace('×', '*'));
+            currentInput = result.toString();
+            shouldResetDisplay = true;
+            updateDisplay();
+          } catch (error) {
+            currentInput = 'Error';
+            shouldResetDisplay = true;
+            updateDisplay();
+          }
+        }
+        
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+          const key = event.key;
+          if (key >= '0' && key <= '9' || key === '.') {
+            appendToDisplay(key);
+          } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            appendToDisplay(key === '*' ? '×' : key);
+          } else if (key === 'Enter' || key === '=') {
+            calculate();
+          } else if (key === 'Escape') {
+            clearDisplay();
+          } else if (key === 'Backspace') {
+            deleteLast();
+          }
+        });
+      `;
+    }
+    
+    if (isTodo) {
+      return `
+        let todos = [];
+        
+        function addTodo() {
+          const input = document.getElementById('todoInput');
+          const text = input.value.trim();
+          
+          if (text) {
+            todos.push({ id: Date.now(), text, completed: false });
+            input.value = '';
+            renderTodos();
+          }
+        }
+        
+        function toggleTodo(id) {
+          todos = todos.map(todo => 
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+          );
+          renderTodos();
+        }
+        
+        function deleteTodo(id) {
+          todos = todos.filter(todo => todo.id !== id);
+          renderTodos();
+        }
+        
+        function renderTodos() {
+          const list = document.getElementById('todoList');
+          list.innerHTML = todos.map(todo => \`
+            <li class="todo-item \${todo.completed ? 'completed' : ''}">
+              <span onclick="toggleTodo(\${todo.id})" style="cursor: pointer; \${todo.completed ? 'text-decoration: line-through;' : ''}">\${todo.text}</span>
+              <button onclick="deleteTodo(\${todo.id})" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Delete</button>
+            </li>
+          \`).join('');
+        }
+        
+        document.getElementById('todoInput').addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') addTodo();
+        });
+      `;
+    }
+    
     return `
       function interact() {
         alert('Hello! Your application is working perfectly!');
@@ -199,6 +457,19 @@ export class FreeAIClient {
           document.querySelector('.hero-section').style.transform = 'scale(1)';
         }, 200);
       }
+      
+      // Add some interactive animations
+      document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+          button.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+          });
+          button.addEventListener('mouseleave', function() {
+            this.style.boxShadow = 'none';
+          });
+        });
+      });
     `;
   }
   
