@@ -21,7 +21,7 @@ export interface ChatPanelProps {
 
 export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   const { generateCode, isProcessing, apiKey, usingFreeAPI, apiProvider, modelType, saveApiKey, clearApiKey, setFreeAPI } = useAI();
-  const { isAuthenticated, user, signIn, signOut, saveProject } = usePuter();
+  const { isAuthenticated, user, signIn, signOut, saveProject, generateAI, generateCode: puterGenerateCode } = usePuter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [hasAuthError, setHasAuthError] = useState(false);
@@ -32,8 +32,8 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     // Add welcome message with Puter.js info
     if (messages.length === 0) {
       const welcomeMessage = isAuthenticated 
-        ? `Hello ${user?.username || 'there'}! I'm your AI assistant powered by Puter.js. With your cloud account connected, I can save your projects automatically and provide unlimited AI assistance. What would you like to create today?`
-        : `Hello! I'm your professional AI assistant powered by ${usingFreeAPI ? 'Puter.js (Free GPT-4o mini)' : apiProvider}. I can build complete, production-ready web applications. Sign in to Puter.js for automatic project saving and unlimited features!`;
+        ? `Hello ${user?.username || 'there'}! I'm your AI assistant powered by Puter.js with unlimited OpenAI API access. With your cloud account connected, I can save your projects automatically and provide unlimited AI assistance. What would you like to create today?`
+        : `Hello! I'm your professional AI assistant powered by ${usingFreeAPI ? 'Puter.js (Unlimited OpenAI API)' : apiProvider}. I can build complete, production-ready web applications. Sign in to Puter.js for unlimited OpenAI API access, automatic project saving and unlimited features!`;
         
       setMessages([
         {
@@ -113,7 +113,16 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     
     try {
       console.log('🚀 Starting professional code generation...');
-      const response = await generateCode(content);
+      
+      // Use Puter.js unlimited OpenAI API if authenticated, otherwise use regular API
+      let response;
+      if (isAuthenticated) {
+        console.log('🎯 Using Puter.js unlimited OpenAI API...');
+        response = await puterGenerateCode(content);
+      } else {
+        console.log('🔧 Using configured AI provider...');
+        response = await generateCode(content);
+      }
       
       // Remove the thinking message
       setMessages(prev => prev.filter(msg => msg.id !== thinkingId));
@@ -141,12 +150,11 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       // Add the AI's response message
       let responseMessage = response.explanation || "I've created your professional cyberpunk web application! Check the preview panel to see your modern, responsive application with neon effects in action.";
       
-      if (usingFreeAPI) {
-        responseMessage += "\n\n💡 Built with free Puter.js AI - professional cyberpunk results without API costs!";
-      }
-      
       if (isAuthenticated) {
+        responseMessage += "\n\n💡 Built with unlimited Puter.js OpenAI API - professional cyberpunk results with no limits!";
         responseMessage += "\n\n☁️ Project automatically saved to your Puter.js cloud!";
+      } else if (usingFreeAPI) {
+        responseMessage += "\n\n💡 Built with free Puter.js AI - professional cyberpunk results without API costs!";
       }
       
       addMessage("assistant", responseMessage);
@@ -154,7 +162,9 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       // Success notification
       if (html || css || js) {
         toast.success("Professional Cyberpunk Application Generated! 🎉", {
-          description: "Your enterprise-grade web app with neon effects is ready",
+          description: isAuthenticated 
+            ? "Your enterprise-grade web app with unlimited AI is ready" 
+            : "Your enterprise-grade web app with neon effects is ready",
           duration: 4000,
         });
       }
@@ -199,7 +209,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
           <div className="flex flex-col">
             <h2 className="font-medium text-sm bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400">Cyberpunk AI Engineer</h2>
             <span className="text-xs text-cyan-300/70 flex items-center gap-1">
-              {usingFreeAPI ? "Powered by Puter.js (Free GPT-4o)" : `${apiProvider} API`}
+              {isAuthenticated ? "Unlimited OpenAI API via Puter.js" : (usingFreeAPI ? "Powered by Puter.js (Free GPT-4o)" : `${apiProvider} API`)}
               {isAuthenticated && (
                 <>
                   <Cloud className="h-3 w-3 text-green-400" />
@@ -216,7 +226,6 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
               variant="ghost" 
               size="icon"
               className="hover:bg-slate-800/50 h-8 w-8 rounded-full"
-              title="Settings"
             >
               <Settings className="h-4 w-4 text-cyan-400" />
             </Button>
@@ -268,7 +277,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
                 <div className="h-4 w-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse"></div>
                 <span className="text-sm text-cyan-300 font-medium">Cyberpunk AI Engineering Process</span>
                 <Sparkles className="h-3 w-3 text-yellow-400 animate-pulse" />
-                {isAuthenticated && <Database className="h-3 w-3 text-green-400" title="Auto-saving to cloud" />}
+                {isAuthenticated && <Database className="h-3 w-3 text-green-400" />}
               </div>
               
               {/* Current thinking step with emphasis */}
@@ -293,7 +302,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
               
               <div className="mt-3 text-xs text-slate-400 italic">
                 Professional cyberpunk code generation in progress...
-                {isAuthenticated && " • Auto-saving to Puter.js cloud"}
+                {isAuthenticated && " • Auto-saving to Puter.js cloud • Using unlimited OpenAI API"}
               </div>
             </div>
           )}
