@@ -266,6 +266,7 @@ const Templates = () => {
         </div>
       </main>
       
+      {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="container py-8 px-4 text-sm">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
