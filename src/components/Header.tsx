@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Github, Code, Moon, Sun, Menu, ExternalLink } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useContext } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +13,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { ThemeContext } from "@/App";
 
 export default function Header() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useContext(ThemeContext);
   const location = useLocation();
   
   const toggleTheme = () => {

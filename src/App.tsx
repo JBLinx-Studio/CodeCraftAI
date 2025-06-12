@@ -4,46 +4,79 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import Index from "./pages/Index";
+import { useState, useEffect } from "react";
+
+// Pages
+import Home from "./pages/Home";
+import Features from "./pages/Features";
 import Templates from "./pages/Templates";
 import Documentation from "./pages/Documentation";
-import Features from "./pages/Features";
-import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import { useEffect } from "react";
 
-const queryClient = new QueryClient();
+// Create theme context
+import { createContext } from "react";
 
-function App() {
+type ThemeContextType = {
+  theme: "light" | "dark";
+  setTheme: (theme: "light" | "dark") => void;
+};
+
+export const ThemeContext = createContext<ThemeContextType>({
+  theme: "light",
+  setTheme: () => {},
+});
+
+const App = () => {
+  // Create a client inside the component function
+  const [queryClient] = useState(() => new QueryClient());
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  
+  // Apply the saved theme when the app loads
   useEffect(() => {
-    // Handle GitHub Pages SPA routing
-    if (window.location.hash.includes('#/')) {
-      const path = window.location.hash.slice(1);
-      window.history.replaceState(null, '', path);
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    const initialTheme = (savedTheme === "dark" || (!savedTheme && prefersDark)) ? "dark" : "light";
+    setTheme(initialTheme);
+    
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
   }, []);
-
+  
+  // Update theme function that also updates localStorage and document classes
+  const updateTheme = (newTheme: "light" | "dark") => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+  
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeContext.Provider value={{ theme, setTheme: updateTheme }}>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
-          <BrowserRouter basename="/CodeCraftAI">
+          <Sonner position="top-right" closeButton theme="system" />
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/home" element={<Home />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/features" element={<Features />} />
               <Route path="/templates" element={<Templates />} />
               <Route path="/documentation" element={<Documentation />} />
-              <Route path="/features" element={<Features />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeContext.Provider>
   );
-}
+};
 
 export default App;

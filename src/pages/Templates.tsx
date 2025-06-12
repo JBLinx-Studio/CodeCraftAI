@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "sonner";
@@ -138,6 +139,7 @@ const Templates = () => {
                 <TabsContent value="all" className="mt-8">
                   <TemplateGallery 
                     onSelectTemplate={handleSelectTemplate}
+                    searchQuery={searchQuery} 
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                   />
@@ -146,6 +148,7 @@ const Templates = () => {
                 <TabsContent value="landing" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
+                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="landing"
@@ -155,6 +158,7 @@ const Templates = () => {
                 <TabsContent value="dashboard" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
+                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="dashboard"
@@ -164,6 +168,7 @@ const Templates = () => {
                 <TabsContent value="ecommerce" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
+                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="ecommerce"
@@ -173,6 +178,7 @@ const Templates = () => {
                 <TabsContent value="blog" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
+                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="blog"
@@ -260,7 +266,6 @@ const Templates = () => {
         </div>
       </main>
       
-      {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="container py-8 px-4 text-sm">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">

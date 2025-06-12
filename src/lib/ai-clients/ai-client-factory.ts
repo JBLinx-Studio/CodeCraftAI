@@ -3,9 +3,8 @@ import { AIClient, AIClientOptions, FREE_API_KEY } from "./base-client";
 import { OpenAIClient, OpenAIClientOptions } from "./openai-client";
 import { HuggingFaceClient, HuggingFaceClientOptions } from "./huggingface-client";
 import { PerplexityClient, PERPLEXITY_MODELS, PerplexityClientOptions } from "./perplexity-client";
-import { FreeAIClient, FreeClientOptions } from "./free-client";
+import { FreeAPIClient, FreeClientOptions } from "./free-client";
 import { PuterClient, PuterClientOptions } from "./puter-client";
-import { puterService } from "@/services/puter-service";
 import { AIProvider } from "@/types";
 
 export interface AIClientFactoryOptions {
@@ -15,22 +14,15 @@ export interface AIClientFactoryOptions {
 }
 
 export class AIClientFactory {
-  static async createClient(options: AIClientFactoryOptions): Promise<AIClient> {
+  static createClient(options: AIClientFactoryOptions): AIClient {
     const { apiKey, provider, modelType } = options;
     
-    // Check if user is authenticated with Puter.js for unlimited OpenAI API access
-    const isAuthenticated = await puterService.isSignedIn();
-    
-    // If using free API, no API key, or user is authenticated with Puter.js, use PuterClient
-    if (provider === "FREE" || apiKey === FREE_API_KEY || !apiKey || apiKey.trim() === '' || isAuthenticated) {
-      if (isAuthenticated) {
-        console.log("Using Puter.js with unlimited OpenAI API access (authenticated user)");
-      } else {
-        console.log("Using Puter.js AI (free GPT-4o mini)");
-      }
+    // If using free API or no API key, use Puter.js as the primary free option
+    if (provider === "FREE" || apiKey === FREE_API_KEY || !apiKey || apiKey.trim() === '') {
+      console.log("Using Puter.js AI (free GPT-4o mini)");
       return new PuterClient({ 
         apiKey: FREE_API_KEY,
-        model: isAuthenticated ? "gpt-4o" : "gpt-4o-mini"
+        model: "gpt-4o-mini" 
       });
     }
     
@@ -58,7 +50,7 @@ export class AIClientFactory {
           console.warn(`Unsupported AI provider: ${provider}, falling back to Puter.js AI`);
           return new PuterClient({ 
             apiKey: FREE_API_KEY, 
-            model: isAuthenticated ? "gpt-4o" : "gpt-4o-mini"
+            model: "gpt-4o-mini" 
           });
       }
     } catch (error) {
@@ -66,7 +58,7 @@ export class AIClientFactory {
       console.log("Falling back to Puter.js AI due to client creation error");
       return new PuterClient({ 
         apiKey: FREE_API_KEY,
-        model: isAuthenticated ? "gpt-4o" : "gpt-4o-mini"
+        model: "gpt-4o-mini" 
       });
     }
   }
