@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import ChatMessage from "./ChatMessage";
@@ -5,7 +6,7 @@ import ChatInput from "./ChatInput";
 import { Message, AIProvider } from "@/types";
 import AISettings from "./AISettings";
 import PuterAuth from "./PuterAuth";
-import { Settings, Zap, Brain, Code, Sparkles, Cloud, Database } from "lucide-react";
+import { Settings, Brain, Code, Sparkles, Cloud } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAI } from "@/hooks/use-ai";
 import { usePuter } from "@/hooks/use-puter";
@@ -24,16 +25,13 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   const { isAuthenticated, user, signIn, signOut, saveProject, generateAI, generateCode: puterGenerateCode } = usePuter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [hasAuthError, setHasAuthError] = useState(false);
-  const [aiThinkingSteps, setAiThinkingSteps] = useState<string[]>([]);
-  const [currentThinkingStep, setCurrentThinkingStep] = useState<string>('');
 
   useEffect(() => {
     // Add welcome message with Puter.js info
     if (messages.length === 0) {
       const welcomeMessage = isAuthenticated 
-        ? `Hello ${user?.username || 'there'}! I'm your AI assistant powered by Puter.js with unlimited OpenAI API access. With your cloud account connected, I can save your projects automatically and provide unlimited AI assistance. What would you like to create today?`
-        : `Hello! I'm your professional AI assistant powered by ${usingFreeAPI ? 'Puter.js (Unlimited OpenAI API)' : apiProvider}. I can build complete, production-ready web applications. Sign in to Puter.js for unlimited OpenAI API access, automatic project saving and unlimited features!`;
+        ? `Hello ${user?.username || 'there'}! 👋 I'm your AI assistant powered by Puter.js with unlimited access. I can help you build any web application - just describe what you want and I'll create it for you instantly!`
+        : `Hello! 👋 I'm your AI assistant powered by Puter.js free AI. I can build complete web applications for you - no API keys needed! Just tell me what you want to create and I'll make it happen.`;
         
       setMessages([
         {
@@ -44,7 +42,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
         },
       ]);
     }
-  }, [messages.length, usingFreeAPI, apiProvider, isAuthenticated, user]);
+  }, [messages.length, isAuthenticated, user]);
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     setMessages((prev) => [
@@ -58,39 +56,6 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     ]);
   };
 
-  const simulateLovableAIThinking = () => {
-    const thinkingSteps = [
-      "🧠 Analyzing your requirements...",
-      "📋 Planning cyberpunk application architecture...",
-      "🎨 Designing neon user interface layout...",
-      "🏗️ Setting up semantic HTML structure...",
-      "💫 Creating responsive CSS with cyber effects...",
-      "⚡ Writing interactive JavaScript with animations...",
-      "🔧 Optimizing for performance and accessibility...",
-      "📱 Ensuring mobile responsiveness...",
-      "✨ Adding professional cyberpunk animations...",
-      "☁️ Preparing for Puter.js cloud integration...",
-      "🚀 Finalizing production-ready code...",
-      "✅ Cyberpunk application ready for deployment!"
-    ];
-
-    setAiThinkingSteps([]);
-    setCurrentThinkingStep('');
-    
-    thinkingSteps.forEach((step, index) => {
-      setTimeout(() => {
-        setCurrentThinkingStep(step);
-        setAiThinkingSteps(prev => [...prev, step]);
-      }, index * 600);
-    });
-
-    // Clear thinking steps after completion
-    setTimeout(() => {
-      setCurrentThinkingStep('');
-      setAiThinkingSteps([]);
-    }, thinkingSteps.length * 600 + 2000);
-  };
-
   const handleSendMessage = async (content: string) => {
     addMessage("user", content);
     
@@ -98,39 +63,33 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       return;
     }
     
-    // Start Lovable-style AI thinking simulation
-    setAiThinkingSteps([]);
-    simulateLovableAIThinking();
-    
     // Add a thinking message
     const thinkingId = nanoid();
     setMessages((prev) => [...prev, {
       id: thinkingId,
       role: "assistant",
-      content: "🤖 AI Engineer is building your professional cyberpunk web application...",
+      content: "🤖 Creating your application...",
       timestamp: Date.now(),
     }]);
     
     try {
-      console.log('🚀 Starting professional code generation...');
+      console.log('🚀 Starting code generation...');
       
-      // Use Puter.js unlimited OpenAI API if authenticated, otherwise use regular API
+      // Use Puter.js unlimited API if authenticated, otherwise use free API
       let response;
       if (isAuthenticated) {
-        console.log('🎯 Using Puter.js unlimited OpenAI API...');
+        console.log('🎯 Using Puter.js unlimited API...');
         response = await puterGenerateCode(content);
       } else {
-        console.log('🔧 Using configured AI provider...');
+        console.log('🔧 Using Puter.js free AI...');
         response = await generateCode(content);
       }
       
       // Remove the thinking message
       setMessages(prev => prev.filter(msg => msg.id !== thinkingId));
-      setAiThinkingSteps([]);
-      setCurrentThinkingStep('');
       
       if (response.error) {
-        addMessage("assistant", `I encountered an issue: ${response.error}. But I've created a professional cyberpunk application for you using my advanced capabilities!`);
+        addMessage("assistant", `I encountered an issue: ${response.error}. But I've created an application for you using my capabilities!`);
       }
       
       const { html = "", css = "", js = "" } = response.code || {};
@@ -142,29 +101,29 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
         
         // Auto-save to Puter.js cloud if authenticated
         if (isAuthenticated && (html || css || js)) {
-          const projectName = `cyberpunk_app_${Date.now()}`;
+          const projectName = `app_${Date.now()}`;
           await saveProject(projectName, { html, css, js });
         }
       }
       
       // Add the AI's response message
-      let responseMessage = response.explanation || "I've created your professional cyberpunk web application! Check the preview panel to see your modern, responsive application with neon effects in action.";
+      let responseMessage = response.explanation || "I've created your web application! Check the preview to see your creation in action.";
       
       if (isAuthenticated) {
-        responseMessage += "\n\n💡 Built with unlimited Puter.js OpenAI API - professional cyberpunk results with no limits!";
-        responseMessage += "\n\n☁️ Project automatically saved to your Puter.js cloud!";
-      } else if (usingFreeAPI) {
-        responseMessage += "\n\n💡 Built with free Puter.js AI - professional cyberpunk results without API costs!";
+        responseMessage += "\n\n✨ Built with unlimited Puter.js API - no limits!";
+        responseMessage += "\n\n☁️ Project automatically saved to your cloud!";
+      } else {
+        responseMessage += "\n\n✨ Built with free Puter.js AI - no API costs!";
       }
       
       addMessage("assistant", responseMessage);
       
       // Success notification
       if (html || css || js) {
-        toast.success("Professional Cyberpunk Application Generated! 🎉", {
+        toast.success("Application Created! 🎉", {
           description: isAuthenticated 
-            ? "Your enterprise-grade web app with unlimited AI is ready" 
-            : "Your enterprise-grade web app with neon effects is ready",
+            ? "Your app is ready with unlimited AI power" 
+            : "Your app is ready with free AI",
           duration: 4000,
         });
       }
@@ -173,13 +132,11 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       
       // Remove the thinking message
       setMessages(prev => prev.filter(msg => msg.id !== thinkingId));
-      setAiThinkingSteps([]);
-      setCurrentThinkingStep('');
       
-      addMessage("assistant", "I encountered an issue, but I've generated a professional cyberpunk application for you using my built-in capabilities. You can refine it by describing what you'd like to change!");
+      addMessage("assistant", "I encountered an issue, but I've generated an application for you using my built-in capabilities. You can refine it by describing what you'd like to change!");
       
       toast.error("Generation Error", {
-        description: "Used fallback mode to create your professional cyberpunk app",
+        description: "Used fallback mode to create your app",
       });
     }
   };
@@ -195,27 +152,26 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       clearApiKey();
       return true;
     }
-    setHasAuthError(false);
     return true;
   };
 
   return (
-    <div className="flex flex-col h-full cyber-panel overflow-hidden">
-      <div className="flex justify-between items-center p-3 border-b bg-gradient-to-r from-slate-800/90 to-slate-900/90">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center shadow-glow-sm pulse cyber-pulse">
-            <Brain className="h-3.5 w-3.5 text-white" />
-          </div>
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center p-4 border-b bg-slate-50 dark:bg-slate-800">
+        <div className="flex items-center gap-3">
           <div className="flex flex-col">
-            <h2 className="font-medium text-sm bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400">Cyberpunk AI Engineer</h2>
-            <span className="text-xs text-cyan-300/70 flex items-center gap-1">
-              {isAuthenticated ? "Unlimited OpenAI API via Puter.js" : (usingFreeAPI ? "Powered by Puter.js (Free GPT-4o)" : `${apiProvider} API`)}
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-blue-500" />
+              <span className="font-medium text-sm">AI Assistant</span>
               {isAuthenticated && (
-                <>
-                  <Cloud className="h-3 w-3 text-green-400" />
-                  <span className="text-green-400">Cloud Connected</span>
-                </>
+                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 rounded-full">
+                  <Cloud className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  <span className="text-xs text-green-600 dark:text-green-400">Cloud</span>
+                </div>
               )}
+            </div>
+            <span className="text-xs text-slate-500">
+              {isAuthenticated ? "Unlimited Puter.js API" : "Free Puter.js AI"}
             </span>
           </div>
         </div>
@@ -225,21 +181,21 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
             <Button 
               variant="ghost" 
               size="icon"
-              className="hover:bg-slate-800/50 h-8 w-8 rounded-full"
+              className="h-8 w-8"
             >
-              <Settings className="h-4 w-4 text-cyan-400" />
+              <Settings className="h-4 w-4" />
             </Button>
           </SheetTrigger>
-          <SheetContent className="cyber-panel border-l border-cyan-500/30 w-[350px] sm:w-[450px] backdrop-blur-xl">
+          <SheetContent className="w-[400px] sm:w-[500px]">
             <Tabs defaultValue="ai" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-slate-800/50">
-                <TabsTrigger value="ai" className="data-[state=active]:bg-cyan-500/20">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="ai">
                   <Brain className="h-4 w-4 mr-2" />
                   AI Settings
                 </TabsTrigger>
-                <TabsTrigger value="cloud" className="data-[state=active]:bg-purple-500/20">
+                <TabsTrigger value="cloud">
                   <Cloud className="h-4 w-4 mr-2" />
-                  Puter.js Cloud
+                  Cloud
                 </TabsTrigger>
               </TabsList>
               
@@ -264,52 +220,15 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
         </Sheet>
       </div>
 
-      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-slate-900/80 to-slate-800/80">
-        <div className="space-y-4 mb-4">
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
-          
-          {/* Lovable-style AI Thinking Steps Display with Cyberpunk theme */}
-          {isProcessing && (aiThinkingSteps.length > 0 || currentThinkingStep) && (
-            <div className="bg-slate-800/50 border border-cyan-500/30 rounded-lg p-4 backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-4 w-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400 animate-pulse"></div>
-                <span className="text-sm text-cyan-300 font-medium">Cyberpunk AI Engineering Process</span>
-                <Sparkles className="h-3 w-3 text-yellow-400 animate-pulse" />
-                {isAuthenticated && <Database className="h-3 w-3 text-green-400" />}
-              </div>
-              
-              {/* Current thinking step with emphasis */}
-              {currentThinkingStep && (
-                <div className="mb-2 p-2 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded border border-cyan-400/20">
-                  <div className="flex items-center gap-2 text-sm text-cyan-200 font-medium">
-                    <Code className="h-3 w-3 animate-spin" />
-                    <span>{currentThinkingStep}</span>
-                  </div>
-                </div>
-              )}
-              
-              {/* Completed steps */}
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {aiThinkingSteps.slice(0, -1).map((step, index) => (
-                  <div key={index} className="flex items-center gap-2 text-xs text-slate-300 opacity-70">
-                    <div className="h-1 w-1 rounded-full bg-green-400"></div>
-                    <span>{step}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-3 text-xs text-slate-400 italic">
-                Professional cyberpunk code generation in progress...
-                {isAuthenticated && " • Auto-saving to Puter.js cloud • Using unlimited OpenAI API"}
-              </div>
-            </div>
-          )}
         </div>
       </ScrollArea>
 
-      <div className="p-2 border-t border-slate-700/50 bg-slate-800/90 backdrop-blur-sm">
+      <div className="p-4 border-t bg-slate-50 dark:bg-slate-800">
         <ChatInput onSendMessage={handleSendMessage} disabled={isProcessing} isProcessing={isProcessing} />
       </div>
     </div>
