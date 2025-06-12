@@ -1,4 +1,3 @@
-
 import { AIClient, AIClientOptions, AIRequestParams, AIServiceResponse } from "./base-client";
 import { extractCodeBlocks } from "@/lib/utils";
 
@@ -282,7 +281,7 @@ export class FreeAPIClient implements AIClient {
     // Add system prompt
     messages.push({
       role: "system",
-      content: `${this.createEnhancedSystemPrompt()}
+      content: `${this.createEnhancedPrompt(prompt, history)}
       
 When asked to create web applications:
 1. First analyze the request and show your reasoning.
@@ -1126,7 +1125,6 @@ document.addEventListener('DOMContentLoaded', function() {
   \`;
   document.head.appendChild(style);
 });`;
-
     } else if (appType.includes("dashboard")) {
       // Generate dashboard template
       html = `<!DOCTYPE html>
@@ -2702,59 +2700,114 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Create notification function
   function showNotification(message, type = 'info') {
+    // Create notification element if not in CSS
+    if (!document.querySelector('style#notification-styles')) {
+      const style = document.createElement('style');
+      style.id = 'notification-styles';
+      style.textContent = \`
+        .notification {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          max-width: 300px;
+          padding: 15px 20px;
+          background-color: white;
+          border-radius: 4px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+          transform: translateY(-20px);
+          opacity: 0;
+          transition: all 0.3s ease-in-out;
+          z-index: 1000;
+        }
+        .notification.show {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        .notification.success {
+          border-left: 4px solid #4caf50;
+        }
+        .notification.error {
+          border-left: 4px solid #f44336;
+        }
+        .notification.info {
+          border-left: 4px solid #2196f3;
+        }
+      \`;
+      document.head.appendChild(style);
+    }
+    
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = \`notification notification-\${type}\`;
+    notification.className = \`notification \${type}\`;
     notification.textContent = message;
-    notification.style.cssText = \`
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 15px 25px;
-      border-radius: var(--border-radius-md);
-      box-shadow: var(--shadow-lg);
-      z-index: 9999;
-      color: white;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.3s, transform 0.3s;
-    \`;
-    
-    // Set background based on type
-    if (type === 'info') {
-      notification.style.backgroundColor = '#2196f3';
-    } else if (type === 'success') {
-      notification.style.backgroundColor = '#4caf50';
-    } else if (type === 'error') {
-      notification.style.backgroundColor = '#f44336';
-    } else if (type === 'warning') {
-      notification.style.backgroundColor = '#ff9800';
-    }
     
     // Add to DOM
     document.body.appendChild(notification);
     
-    // Trigger transition
+    // Trigger animation
     setTimeout(() => {
-      notification.style.opacity = '1';
-      notification.style.transform = 'translateY(0)';
+      notification.classList.add('show');
     }, 10);
     
     // Remove after delay
     setTimeout(() => {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateY(-20px)';
+      notification.classList.remove('show');
       
+      // Remove from DOM after animation completes
       setTimeout(() => {
-        document.body.removeChild(notification);
-      }, 300); // Match transition time
+        notification.remove();
+      }, 300);
     }, 3000);
   }
   
-  // Add notification for demo purposes
-  setTimeout(() => {
-    showNotification('Welcome to AnalyticsPro Dashboard', 'info');
-  }, 1000);
+  // Initialize any interactive elements
+  initializeInteractiveElements();
+  
+  function initializeInteractiveElements() {
+    // Add hover effects for buttons
+    const buttons = document.querySelectorAll('.btn');
+    
+    buttons.forEach(button => {
+      button.addEventListener('mouseover', function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+      });
+      
+      button.addEventListener('mouseout', function() {
+        this.style.transform = '';
+        this.style.boxShadow = '';
+      });
+    });
+    
+    // Add pulse animation to CTA
+    const ctaButton = document.querySelector('.cta .btn');
+    if (ctaButton) {
+      // Add pulse animation CSS if not already in stylesheet
+      if (!document.querySelector('style#pulse-animation')) {
+        const style = document.createElement('style');
+        style.id = 'pulse-animation';
+        style.textContent = \`
+          @keyframes pulse {
+            0% {
+              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            70% {
+              box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+          }
+          .pulse {
+            animation: pulse 2s infinite;
+          }
+        \`;
+        document.head.appendChild(style);
+      }
+      
+      ctaButton.classList.add('pulse');
+    }
+  }
 });`;
     } else {
       // Default template if we can't determine the type
@@ -2841,10 +2894,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="feature-card">
             <div class="feature-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M17 21v-2a4 4 0 0 0-3-3.87"></path>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53"></path>
               </svg>
             </div>
             <h3>User-Friendly</h3>
@@ -2885,13 +2938,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="#" aria-label="Instagram">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <path d="M16 11.37a4 4 0 1 1 0 7.75"></path>
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
               </svg>
             </a>
             <a href="#" aria-label="LinkedIn">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 1-2-2 2 2 0 0 1-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
                 <rect x="2" y="9" width="4" height="12"></rect>
                 <circle cx="4" cy="4" r="2"></circle>
               </svg>
@@ -2935,7 +2988,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
             <li>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
               <span>+1 (555) 123-4567</span>
             </li>
@@ -3899,8 +3952,24 @@ document.addEventListener('DOMContentLoaded', function() {
     return { html, css, js };
   }
 
-  createEnhancedPrompt(prompt: string, chatHistory: Array<{ role: string; content: string }> = []): string {
+  private createEnhancedPrompt(prompt: string, chatHistory?: Array<{role: string, content: string}>): string {
+    let enhancedPrompt = `${this.getSystemPrompt()}\n\n`;
+    
+    if (chatHistory && chatHistory.length > 0) {
+      enhancedPrompt += "Previous conversation context:\n";
+      chatHistory.slice(-5).forEach(msg => {
+        enhancedPrompt += `${msg.role}: ${msg.content}\n`;
+      });
+      enhancedPrompt += "\n";
+    }
+    
+    enhancedPrompt += `User request: ${prompt}\n\n`;
+    enhancedPrompt += "Please provide a complete web application with HTML, CSS, and JavaScript.";
+    
+    return enhancedPrompt;
+  }
+
+  private getSystemPrompt(): string {
     return `Generate a web application based on this description: ${prompt}`;
   }
 }
-
