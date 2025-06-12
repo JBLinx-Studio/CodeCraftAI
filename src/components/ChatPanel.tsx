@@ -22,8 +22,8 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     // Welcome message
     if (messages.length === 0) {
       const welcomeMessage = isAuthenticated 
-        ? `Hi ${user?.username}! 👋 I'm your AI assistant with unlimited Puter.js access. Describe any web app you want to build and I'll create it instantly!`
-        : `Hello! 👋 I'm your free AI assistant powered by Puter.js. Just describe what you want to build and I'll create a complete web application for you!`;
+        ? `Hi ${user?.username}! 👋 I'm your AI coding assistant with unlimited Puter.js access. Tell me what web application you want to build and I'll create it for you instantly!`
+        : `Hello! 👋 I'm your free AI coding assistant powered by Puter.js. Just describe any web application you want to build and I'll generate the complete code for you! Try saying something like "Create a todo app" or "Build a calculator".`;
         
       setMessages([
         {
@@ -53,17 +53,17 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
     
     if (isProcessing) return;
     
-    // Add thinking message
+    // Add thinking message with animation
     const thinkingId = nanoid();
     setMessages((prev) => [...prev, {
       id: thinkingId,
       role: "assistant",
-      content: "🤖 Building your application...",
+      content: "🤖 Generating your web application...",
       timestamp: Date.now(),
     }]);
     
     try {
-      console.log('🚀 Generating code...');
+      console.log('🚀 Starting code generation...');
       
       // Use appropriate AI service
       let response;
@@ -80,28 +80,28 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       
       const { html = "", css = "", js = "" } = response.code || {};
       
-      // Update preview
+      // Update preview in real-time
       if (html || css || js) {
         onCodeGenerated(html, css, js);
-        console.log('✅ Code generated successfully');
+        console.log('✅ Code generated and preview updated');
       }
       
       // Add response message
-      let responseMessage = response.explanation || "Your web application is ready! Check the preview panel to see it in action.";
+      let responseMessage = response.explanation || "Your web application is ready! Check the live preview to see it in action.";
       
       if (isAuthenticated) {
-        responseMessage += "\n\n✨ Built with unlimited Puter.js power!";
+        responseMessage += "\n\n✨ Generated with unlimited Puter.js power!";
       } else {
-        responseMessage += "\n\n✨ Built with free Puter.js AI - no costs!";
+        responseMessage += "\n\n✨ Generated with free Puter.js AI!";
       }
       
       addMessage("assistant", responseMessage);
       
       // Success notification
       if (html || css || js) {
-        toast.success("🎉 App Created!", {
+        toast.success("🎉 Web App Created!", {
           description: isAuthenticated 
-            ? "Your app is ready with unlimited AI" 
+            ? "Your app is ready with unlimited AI power" 
             : "Your app is ready with free AI",
         });
       }
@@ -111,7 +111,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       // Remove thinking message
       setMessages(prev => prev.filter(msg => msg.id !== thinkingId));
       
-      addMessage("assistant", "I encountered an issue, but I can still help you build your application. Try describing what you want in a different way!");
+      addMessage("assistant", "I encountered an issue generating your app, but I'm ready to help! Try describing your project in a different way or be more specific about what you want to build.");
       
       toast.error("Generation Error", {
         description: "Please try again with a different description",
@@ -120,7 +120,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       {/* Messages Area */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
@@ -131,7 +131,7 @@ export const ChatPanel = ({ onCodeGenerated }: ChatPanelProps) => {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t bg-slate-50 dark:bg-slate-800">
+      <div className="border-t bg-white">
         <ChatInput 
           onSendMessage={handleSendMessage} 
           disabled={false}
