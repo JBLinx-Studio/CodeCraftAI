@@ -128,4 +128,4 @@ CodeCraft AI is developed by **JBLinx Studio**, a forward-thinking technology co
 
 ---
 
-**Created by JBLinx Studio**
+**Built with ❤️ by JBLinx Studio**
