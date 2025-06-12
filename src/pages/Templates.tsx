@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "sonner";
@@ -139,7 +138,6 @@ const Templates = () => {
                 <TabsContent value="all" className="mt-8">
                   <TemplateGallery 
                     onSelectTemplate={handleSelectTemplate}
-                    searchQuery={searchQuery} 
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                   />
@@ -148,7 +146,6 @@ const Templates = () => {
                 <TabsContent value="landing" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
-                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="landing"
@@ -158,7 +155,6 @@ const Templates = () => {
                 <TabsContent value="dashboard" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
-                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="dashboard"
@@ -168,7 +164,6 @@ const Templates = () => {
                 <TabsContent value="ecommerce" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
-                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="ecommerce"
@@ -178,7 +173,6 @@ const Templates = () => {
                 <TabsContent value="blog" className="mt-8">
                   <TemplateGallery
                     onSelectTemplate={handleSelectTemplate}
-                    searchQuery={searchQuery}
                     selectedTemplateId={selectedTemplate?.id}
                     isLoading={isLoading}
                     categoryFilter="blog"

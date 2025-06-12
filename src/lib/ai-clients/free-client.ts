@@ -1,5 +1,9 @@
 
-import { AIClient, Message, ChatResponse } from './base-client';
+import { AIClient } from './base-client';
+
+export interface FreeClientOptions {
+  // No options needed for free client
+}
 
 export class FreeAPIClient implements AIClient {
   private apiKey: string;
@@ -8,11 +12,8 @@ export class FreeAPIClient implements AIClient {
     this.apiKey = apiKey;
   }
 
-  async chat(messages: Message[]): Promise<ChatResponse> {
+  async chat(messages: { role: string; content: string }[]): Promise<{ content: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }> {
     try {
-      // Create enhanced prompt from messages
-      const prompt = this.createEnhancedPrompt(messages);
-      
       // For free tier, return a simple fallback response
       return {
         content: "I'm a free AI assistant. For full functionality, please configure an API key in settings.",
@@ -28,8 +29,9 @@ export class FreeAPIClient implements AIClient {
     }
   }
 
-  createEnhancedPrompt(messages: Message[]): string {
-    return messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+  createEnhancedPrompt(prompt: string, chatHistory?: { role: string; content: string }[]): string {
+    const history = chatHistory || [];
+    return history.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${prompt}`;
   }
 
   async validateApiKey(): Promise<boolean> {

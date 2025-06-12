@@ -60,7 +60,7 @@ const TemplateGallery = ({
         >
           {categories.map((category: string) => (
             <option key={category} value={category}>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+              {(category as string).charAt(0).toUpperCase() + (category as string).slice(1)}
             </option>
           ))}
         </select>
